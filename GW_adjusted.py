@@ -16,15 +16,8 @@ from ot.bregman import sinkhorn
 from ot.utils import dist
 
 
-def square_loss_mine(a, b):
-    """
-    Returns the value of L(a,b)=(1/2)*|a-b|^2
-    """
 
-    return 0.5 * (a - b)**2
-
-
-def tensor_square_loss_mine(C1, C2, T):
+def tensor_square_loss_adjusted(C1, C2, T):
     """
     Returns the value of \mathcal{L}(C1,C2) \otimes T with the square loss
     function as the loss function of Gromow-Wasserstein discrepancy.
@@ -160,7 +153,7 @@ def gromov_wasserstein_adjusted_norm(cost_mat, C1, C2, alpha_linear,p, q, loss_f
             Tprev = T
 
             if loss_fun == 'square_loss':
-                tens = tensor_square_loss_mine(C1, C2, T)
+                tens = tensor_square_loss_adjusted(C1, C2, T)
 
             tens_all = (1-alpha_linear)*tens + alpha_linear*cost_mat_norm
             T = sinkhorn(p, q, tens_all, epsilon)
