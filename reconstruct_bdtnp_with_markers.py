@@ -23,15 +23,15 @@ if __name__ == '__main__':
     print ('Loading data ... ', end='', flush=True)
 
     # Read the BDTNP database
-    gene_names = np.genfromtxt('datasets/bdtnp/dge.txt', usecols=range(6, 82),
+    gene_names = np.genfromtxt('datasets/bdtnp/dge.txt', usecols=range(84),
                           dtype='str', max_rows=1)
     dge = np.loadtxt('datasets/bdtnp/dge.txt', usecols=range(84), skiprows=1)
 
-    # Optional : downsample number of cells
-    num_cells = int(np.random.randint(504, 800, 1)) 
+    # Optional: downsample number of cells
+    # num_cells = int(np.random.randint(504, 800, 1))
+    num_cells = dge.shape[0] # all cells are used
     cells_selected = np.random.choice(dge.shape[0], num_cells, replace=False)
-    dge = dge[cells_selected, :]
-    
+    dge = dge[cells_selected, :]    
     # Choose a number of markers to use for reconstruction
     num_markers = int(np.random.randint(1, 5, 1))
     markers_to_use = np.random.choice(dge.shape[1], num_markers, replace=False)
@@ -104,13 +104,11 @@ if __name__ == '__main__':
     # 7. Correlate results with BDTNP #
     ###################################
     
-    corel = sum([pearsonr(sdge[x, :], dge[:, x])[0] for x in range(76)])/76
-
     with open('output_bdtnp/results.txt', 'a') as f:
-        f.write('number_cells,,number_markers,pearson_correlation' + '\n')
-        if sum(sum(sdge)) > 1:
-            f.write(str(num_cells) + ',' + str(num_markers) + ','
-                    + str(round(corel, 2)) + '\n')
+        f.write('number_cells,,number_markers,' +  ','.join(gene_names) + '\n')
+        f.write(str(num_cells) + ',' + str(num_markers) + ',')
+        for i in range(len(gene_names)):
+            f.write(str(round(pearsonr(sdge[i, :], dge[:, i])[0], 2)) + ',')
 
 
 
