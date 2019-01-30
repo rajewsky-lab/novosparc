@@ -9,9 +9,9 @@ in space by using single-cell RNA sequencing data. An existing reference
 database of marker genes is not required, but enhances mappability if
 available.
 
-`novoSpaRc` accompanies the following publication
+`novoSpaRc` accompanies the following preprint
 
-*Charting tissues from single-cell transcriptomces*, <br />
+*Charting tissues from single-cell transcriptomes*, <br />
 [*bioRxiv (2018)*](https://www.biorxiv.org/content/early/2018/10/30/456350)
 
 M. Nitzan<sup>#</sup>, N. Karaiskos<sup>#</sup>,
@@ -23,7 +23,7 @@ N. Friedman<sup>&</sup> and N. Rajewsky<sup>&</sup>
 [N.Rajewsky](mailto:rajewsky@mdc-berlin.de)
 
 ## Installation and requirements
-A working `Python` 2.7/3.3 installation and the following libraries are required: 
+A working `Python 2.7/3.3` installation and the following libraries are required: 
 `matplotlib`, `numpy`, `sklearn`, `scipy`, `ot` and `networkx`.
 Having all dependencies available, novoSpaRc can be employed by cloning the 
 repository, modifying the template `reconstruct_tissue.py` accordingly
@@ -38,10 +38,13 @@ and Mac OS X 10.7.
 To spatially reconstruct gene expression, novoSpaRc performs the following
 steps:
 1. Read the gene expression matrix.
+
     1a. Optional: select a random set of cells for the reconstruction.
+
     1b. Optional: subset to a small set of genes (highly variable or other).
 2. Construct the target space.
 3. Setup the optimal transport reconstruction.
+
     3a. Optional: if existing information of marker genes is available, use it.
 4. Perform the spatial reconstruction.
 5. Write outputs to file for further use, such as the spatial gene expression
@@ -52,22 +55,23 @@ matrix and the target space coordinates.
 ## Demonstration code
 We provide scripts that spatially reconstruct two of the tissues presented
 in the paper: the intestinal epithelium [REF] and the stage 6 Drosophila 
-embryo ([Berkley Drosophila Transcription Network Project](bdtnp.lbl.gov)).
+embryo ([Berkley Drosophila Transcription Network Project](http://bdtnp.lbl.gov)).
 
 ### The intestinal epithelium
 
-### The Drosophila embryo
-The script `reconstruct_bdtnp_with_markers.py` reconstructs the early
-Drosophila embryo with only a handful of markers. All cells are used and
+### The *Drosophila* embryo
+The `reconstruct_bdtnp_with_markers.py` script reconstructs the early
+*Drosophila* embryo with only a handful of markers. All cells are used and
 a random set of 1-4 markers is selected. The script outputs plots of
-gene expression for a list of genes, as well as correlations of all
-genes against the real expression values. As the results depend on which 
-marker genes are selected, note that the output will in general differ 
+gene expression for a list of genes, as well as Pearson correlations of the
+reconstructed and original expression values for all genes.
+As the results depend on which 
+marker genes are selected, note that the output might slightly differ 
 from the one found here on the repository. Running time on a desktop 
 computer with two cores is around 6-7 minutes.
 
 ## Running novoSpaRc on your data
 A template file for running novoSpaRc on custom datasets is 
 provided (`reconstruct_tissue.py`). To successfully run novoSpaRc modify the
-template file
+template file accordingly.
 
