@@ -42,15 +42,19 @@ steps:
 
     1a. Optional: select a random set of cells for the reconstruction.
     
-    1b. Optional: subset to a small set of genes (highly variable or other).
+    1b. Optional: select a small set of genes (e.g. highly variable).
 
 2. Construct the target space.
 
 3. Setup the optimal transport reconstruction.
 
-    3a. Optional: if existing information of marker genes is available, use it.
+    3a. Optional: use existing information of marker genes, if available.
 
 4. Perform the spatial reconstruction.
+
+    4a. assigning cells a probability distribution over the target space.
+
+    4b. derive a virtual in situ hybridization (vISH) for all genes over the target space.
 
 5. Write outputs to file for further use, such as the spatial gene expression
 
