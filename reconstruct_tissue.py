@@ -101,7 +101,7 @@ if __name__ == '__main__':
     np.savetxt('output/high_var_genes.txt', high_var_genes, fmt='%s')
     np.savetxt('output/grid_' + shape + '_' + str(num_cells) + '_cells_'
                    + str(locations.shape[0]) + '_locations.txt', locations, fmt='%.4e')
-    np.savetxt('output/sdge_' + shape + '_' + str(num_cells) + '_cells_'
+    np.savetxt('output/sdge_' + str(num_cells) + '_cells_'
                    + str(locations.shape[0]) + '_locations.txt', sdge, fmt='%.4e')
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
