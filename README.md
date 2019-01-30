@@ -70,17 +70,23 @@ in the paper: the intestinal epithelium [Moor, AE, et al., Cell, 2018] and the s
 embryo ([Berkley Drosophila Transcription Network Project](http://bdtnp.lbl.gov)).
 
 ### The intestinal epithelium
+The 'reconstruct_intestine_denovo.py' script reconstructs the crypt-to-villus axis of the mammalian intestinal epithelium, based on data from [Moor, AE, et al., Cell, 2018]. 
+We do it denovo, meaning without any marker genes or atlas. 
+The script outputs plots of gene expression for a list of genes, as well as Pearson correlations of the reconstructed and original expression values for all genes. 
+
+Running time on a standard desktop computer is around XXX minutes.
 
 ### The *Drosophila* embryo
 The `reconstruct_bdtnp_with_markers.py` script reconstructs the early
-*Drosophila* embryo with only a handful of markers. All cells are used and
+*Drosophila* embryo with only a handful of markers, based on the BDTNP dataset [http://bdtnp.lbl.gov]. 
+All cells are used and
 a random set of 1-4 markers is selected. The script outputs plots of
 gene expression for a list of genes, as well as Pearson correlations of the
 reconstructed and original expression values for all genes.
-As the results depend on which 
-marker genes are selected, note that the output might slightly differ 
-from the one found here on the repository. Running time on a desktop 
-computer with two cores is around 6-7 minutes.
+Notice that the results depend on which marker genes are selected. 
+In the manuscript we averaged the results over many different choices of marker genes.
+
+Running time on a desktop computer with two cores is around 6-7 minutes.
 
 ## Running novoSpaRc on your data
 A template file for running `novoSpaRc` on custom datasets is 
