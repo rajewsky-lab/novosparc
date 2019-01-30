@@ -35,6 +35,8 @@ and the following library versions: `matplotlib` v2.2.2, `numpy` v1.14.2,
 and Mac OS X 10.7 with `Python 2.7` and the following library versions: 
 `matplotlib` v2.0.2, `numpy` v1.12.1, `sklearn` v0.18.1, `scipy` v0.19.0, `ot` v0.4.0, `networkx` v1.11.
 
+The code is based in part on adjustments of the POT (Python Optimal Transport) library (https://github.com/rflamary/POT).
+
 ## General usage 
 To spatially reconstruct gene expression, `novoSpaRc` performs the following
 steps:
