@@ -66,7 +66,7 @@ matrix and the target space coordinates.
 
 ## Demonstration code
 We provide scripts that spatially reconstruct two of the tissues presented
-in the paper: the intestinal epithelium [REF] and the stage 6 Drosophila 
+in the paper: the intestinal epithelium [Moor, AE, et al., Cell, 2018] and the stage 6 Drosophila 
 embryo ([Berkley Drosophila Transcription Network Project](http://bdtnp.lbl.gov)).
 
 ### The intestinal epithelium
