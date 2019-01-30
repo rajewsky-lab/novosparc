@@ -32,7 +32,8 @@ and running it to perform the spatial reconstruction.
 `novoSpaRc` has been successfully tested in Ubuntu 16.04 with `Python 3.5`
 and the following library versions: `matplotlib` v2.2.2, `numpy` v1.14.2,
 `sklearn` v0.19.1, `scipy` v1.0.0, `ot` v0.4.0, `networkx` v2.0
-and Mac OS X 10.7.
+and Mac OS X 10.7 with `Python 2.7` and the following library versions: 
+`matplotlib` v2.0.2, `numpy` v1.12.1, `sklearn` v0.18.1, `scipy` v0.19.0, `ot` v0.4.0, `networkx` v1.11.
 
 ## General usage 
 To spatially reconstruct gene expression, `novoSpaRc` performs the following
