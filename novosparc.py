@@ -261,22 +261,6 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells):
                 + str(locations.shape[0]) + '_locations' + '.png')
     plt.clf()
 
-def plot_gene_patterns_1D(locations, sdge, genes, folder, gene_names, num_cells):
-    num_rows = int(round(np.sqrt(len(genes))))
-    xf = len(np.unique(locations))
-    plt.figure(figsize=(16, 12))
-    idx = 1
-    for gene in genes:
-        plt.subplot(num_rows, np.ceil(len(genes)/num_rows), idx)
-        plt.scatter(locations, sdge[np.argwhere(gene_names == gene), :].flatten())
-        plt.title(gene)
-        plt.axis('off')
-        idx += 1
-    plt.tight_layout()
-    plt.savefig(folder + str(num_cells) + '_cells_'
-                + str(locations.shape[0]) + '_locations' + '.png')
-    plt.clf()
-
 def plot_histogram_intestine(mean_exp_new_dist, folder):
     plt.figure(figsize=(5,5))
     ax = plt.gca()
@@ -295,7 +279,53 @@ def plot_histogram_intestine(mean_exp_new_dist, folder):
     im.set_clim(0, 1)
     plt.savefig(folder + '_histogram_intestine_' + '.png')
     plt.clf()
+
+def plot_spatial_expression_intestine(dge_full_mean, sdge, folder)
     
+    zonated_lst = np.array([gene_name.index('Apobec1'),gene_name.index('Apob'),
+                            gene_name.index('Apoa4'),gene_name.index('Apoa1'),
+                            gene_name.index('Npc1l1'),gene_name.index('Slc15a1'),
+                            gene_name.index('Slc5a1'),gene_name.index('Slc2a5'),
+                            gene_name.index('Slc2a2'),gene_name.index('Slc7a9'),
+                            gene_name.index('Slc7a8'),gene_name.index('Slc7a7')])
+    
+    f, axarr = plt.subplots(2,1, sharex=True, figsize=(5,4))
+
+    plt.subplot(2,1,1)
+    x = range(7)
+    y = dge_full_mean[zonated_lst,:].T
+    y_AC = np.mean(y[:,0:5],axis=1)
+    y_P = y[:,5]
+    y_C = np.mean(y[:,6:9],axis=1)
+    y_AA = np.mean(y[:,9:],axis=1)
+    line1 = plt.plot(x, y_AA/y_AA.max(),'r*-')
+    line2 = plt.plot(x, y_C/y_C.max(),'g*-')
+    line3 = plt.plot(x, y_P/y_P.max(),'m*-')
+    line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    plt.xlabel('Villus zones')
+    plt.legend(('Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol'),loc='center left', bbox_to_anchor=(1, 0.64))
+    plt.ylim(0,1.01)
+
+    plt.subplot(2,1,2)
+    x = range(6,-1,-1)
+    y = sdge[zonated_lst,:].T
+    y_AC = np.mean(y[:,0:5],axis=1)
+    y_P = y[:,5]
+    y_C = np.mean(y[:,6:9],axis=1)
+    y_AA = np.mean(y[:,9:],axis=1)
+    line1 = plt.plot(x, y_AA/y_AA.max(),'r*-')
+    line2 = plt.plot(x, y_C/y_C.max(),'g*-')
+    line3 = plt.plot(x, y_P/y_P.max(),'m*-')
+    line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    plt.xlabel('Embedded zones')
+    plt.ylim(0,1.01)
+
+    plt.tight_layout(pad=0, w_pad=0.5, h_pad=0.5)
+
+    plt.savefig(folder + '_spatial_expression_intestine_' + '.png')
+    plt.clf()
+    
+
 def plot_dendgrogram(sdge, folder):
     """Plots the dendrogram of the hierarchical clustering to inspect and choose
     the number of clusters / archetypes."""
