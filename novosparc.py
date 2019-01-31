@@ -29,7 +29,7 @@ import GW_adjusted as gwa
 from textwrap import wrap
 import time
 import sys
-
+import zipfile
 
 #############
 # functions #
