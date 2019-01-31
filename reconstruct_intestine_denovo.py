@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # 7. Plot spatial expression of a few gene groups for the original and embedded zones #
     ###########################################################################################
 
-    plot_spatial_expression_intestine(dge_full_mean, sdge, folder='output_intestine/')
+    plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder='output_intestine/')
     
     
 
