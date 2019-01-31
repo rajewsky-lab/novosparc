@@ -140,7 +140,7 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors=5):
     cost_locations = sp_locations / sp_locations.max()
     cost_locations -= np.mean(cost_locations)
     cost_expression = sp_expression / sp_expression.max()
-    cost_expression -= - np.mean(cost_expression)
+    cost_expression -= np.mean(cost_expression)
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     return cost_expression, cost_locations
@@ -163,7 +163,7 @@ def setup_for_OT_reconstruction_1d(dge, locations, num_neighbors_source = 5, num
     cost_locations = sp_locations / sp_locations.max()
     cost_locations -= np.mean(cost_locations)
     cost_expression = sp_expression / sp_expression.max()
-    cost_expression -= - np.mean(cost_expression)
+    cost_expression -= np.mean(cost_expression)
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     return cost_expression, cost_locations
@@ -277,6 +277,24 @@ def plot_gene_patterns_1D(locations, sdge, genes, folder, gene_names, num_cells)
                 + str(locations.shape[0]) + '_locations' + '.png')
     plt.clf()
 
+def plot_histogram_intestine(mean_exp_new_dist, folder):
+    plt.figure(figsize=(5,5))
+    ax = plt.gca()
+    im = ax.imshow(mean_exp_new_dist.T)
+    my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
+    x = range(mean_exp_new_dist.shape[0])
+    plt.xticks(x, my_xticks)
+    my_yticks = ['0','1','2','3','4','5','6']
+    my_yticks.reverse()
+    plt.yticks(range(mean_exp_new_dist.shape[0]), my_yticks)
+    plt.ylabel('Embedded value')
+    plt.xlabel('Villus zone')
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
+    im.set_clim(0, 1)
+    plt.savefig(folder + '_histogram_intestine_' + '.png')
+    plt.clf()
     
 def plot_dendgrogram(sdge, folder):
     """Plots the dendrogram of the hierarchical clustering to inspect and choose
