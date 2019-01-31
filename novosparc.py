@@ -30,6 +30,7 @@ from textwrap import wrap
 import time
 import sys
 import zipfile
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 #############
 # functions #
