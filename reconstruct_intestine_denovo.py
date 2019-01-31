@@ -26,7 +26,7 @@ if __name__ == '__main__':
     zfile = zipfile.ZipFile('datasets/intestine/dge.tsv.zip')
     zfile.extract('dge.tsv')
     gene_names = np.genfromtxt('dge.tsv', usecols=0, dtype='str', skip_header=1)
-    dge = np.loadtxt('datasets/intestine/dge.tsv',skiprows=1,usecols=range(1,1384))
+    dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
     dge = dge.T
     
     # Optional: downsample number of cells
