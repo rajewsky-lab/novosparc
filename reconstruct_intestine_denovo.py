@@ -22,21 +22,35 @@ if __name__ == '__main__':
     start_time = time.time()
     print ('Loading data ... ', end='', flush=True)
 
-    # Read the BDTNP database
+    # Read the intestine data
     zfile = zipfile.ZipFile('datasets/intestine/dge.tsv.zip')
     zfile.extract('dge.tsv')
     gene_names = np.genfromtxt('dge.tsv', usecols=0, dtype='str', skip_header=1)
-    dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
-    dge = dge.T
+
+    locations_original = np.loadtxt('datasets/intestine/zones.tsv',skiprows=1,usecols=range(1,4))
+    locations_original = locations_original[:,2]
     
+    dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
+    dge_full = dge.T
+     
     # Optional: downsample number of cells
-    num_cells = dge.shape[0] # all cells are used
-    cells_selected = np.random.choice(dge.shape[0], num_cells, replace=False)
-    dge = dge[cells_selected, :]    
+    num_cells = dge_full.shape[0] # all cells are used
+    cells_selected = np.random.choice(dge_full.shape[0], num_cells, replace=False)
+    dge_full = dge_full[cells_selected, :]    
     
     # Select variable genes
-    var_genes = identify_highly_variable_genes(dge, low_x=1, high_x=8, low_y=1, do_plot=False)
-    dge = dge[:, var_genes]    
+#    var_genes = identify_highly_variable_genes(dge_full, do_plot=False)
+#    dge = dge_full[:, var_genes]    
+    var_genes = np.argsort(np.divide(np.var(dge_full.T,axis=1),np.mean(dge_full.T,axis=1)+0.0001))
+    dge = dge_full[:,var_genes[-100:]]  
+    
+    # Compute mean dge over original zones 
+    dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
+    for i in range(grid_len):
+        indices =  np.argwhere(locations_original==i).flatten()
+        temp = np.mean(dge_full[indices,:],axis=0)
+        dge_full_mean[i,:] = temp
+    dge_full_mean = dge_full_mean.T 
     
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     
@@ -47,7 +61,8 @@ if __name__ == '__main__':
     print ('Reading the target space ... ', end='', flush=True)    
     # Read and use a 1d grid
     
-    locations = np.vstack((range(7),np.ones(7))).T
+    grid_len = 7
+    locations = np.vstack((range(grid_len),np.ones(grid_len))).T
     
     print ('done')
 
@@ -77,8 +92,17 @@ if __name__ == '__main__':
     gw = gwa.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
                                               alpha_linear, p_expression, p_locations,
                                               'square_loss', epsilon=5e-4, verbose=True)
-    sdge = np.dot(dge.T, gw)
-    
+
+    # Compute sdge
+    sdge = np.dot(dge_full.T, gw)
+
+    # Compute mean expression distribution over embedded zones 
+    mean_exp_new_dist = np.zeros((grid_len,grid_len))
+    for i in range(grid_len):
+        indices =  np.argwhere(locations_original==i).flatten()
+        temp = np.sum(gw[indices,:],axis=0)
+        mean_exp_new_dist[i,:] = temp/np.sum(temp)
+
     print (' ... done (', round(time.time()-start_time, 2), 'seconds )')
 
     #########################################
@@ -93,23 +117,18 @@ if __name__ == '__main__':
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
 
-    ###########################
-    # 6. Plot gene expression #
-    ###########################
+    ###########################################################################################
+    # 6. Plot histogram showing the distribution over embedded zones for each original zone #
+    ###########################################################################################
 
-    gene_list_to_plot = ['Glul', 'Cyp2el', 'Cyp2f2', 'Alb']
-    plot_gene_patterns_1D(locations, sdge, gene_list_to_plot, 
-                          folder='output_intestine/', gene_names=gene_names, 
-                          num_cells)
-
-    ###################################
-    # 7. Correlate results with FISH data #
-    ###################################
+    plot_histogram_intestine(mean_exp_new_dist, folder='output_intestine/')
     
-    with open('output_intestine/results.txt', 'a') as f:
-        f.write('number_cells,' +  ','.join(gene_names) + '\n')
-        f.write(str(num_cells) + ',')
-        for i in range(len(gene_names)):
-            f.write(str(round(pearsonr(sdge[i, :], dge[:, i])[0], 2)) + ',')
+    ###########################################################################################
+    # 7. Plot spatial expression of a few gene groups for the original and embedded zones #
+    ###########################################################################################
+
+    plot_spatial_expression_intestine(dge_full_mean, sdge, folder='output_intestine/')
+    
+    
 
 
