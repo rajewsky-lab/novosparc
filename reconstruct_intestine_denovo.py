@@ -13,7 +13,6 @@ __email__ = ["nikolaos.karaiskos@mdc-berlin.de", "mornitz@gmail.com"]
 ###########
 
 from novosparc import *
-import zipfile
 
 if __name__ == '__main__':
 
