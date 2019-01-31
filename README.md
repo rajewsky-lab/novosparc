@@ -23,19 +23,17 @@ N. Friedman<sup>&</sup> and N. Rajewsky<sup>&</sup>
 [N.Rajewsky](mailto:rajewsky@mdc-berlin.de)
 
 ## Installation and requirements
-A working `Python 2.7/3.3` installation and the following libraries are required: 
+A working `Python 2.7/3.5` installation and the following libraries are required: 
 `matplotlib`, `numpy`, `sklearn`, `scipy`, `ot` and `networkx`.
 Having all dependencies available, `novoSpaRc` can be employed by cloning the 
 repository, modifying the template `reconstruct_tissue.py` accordingly
 and running it to perform the spatial reconstruction.
 
-`novoSpaRc` has been successfully tested in Ubuntu 16.04 with `Python 3.5`
-and the following library versions: `matplotlib` v2.2.2, `numpy` v1.14.2,
-`sklearn` v0.19.1, `scipy` v1.0.0, `ot` v0.4.0, `networkx` v2.0
-and Mac OS X 10.7 with `Python 2.7` and the following library versions: 
-`matplotlib` v2.0.2, `numpy` v1.12.1, `sklearn` v0.18.1, `scipy` v0.19.0, `ot` v0.4.0, `networkx` v1.11.
+The code is partially based on adjustments of the POT (Python Optimal Transport) library (https://github.com/rflamary/POT).
 
-The code is based in part on adjustments of the POT (Python Optimal Transport) library (https://github.com/rflamary/POT).
+`environments_and_versions.txt` contains environments in which we 
+successfully tested `novoSpaRc`.
+
 
 ## General usage 
 To spatially reconstruct gene expression, `novoSpaRc` performs the following
@@ -59,7 +57,6 @@ steps:
     4b. derive a virtual in situ hybridization (vISH) for all genes over the target space.
 
 5. Write outputs to file for further use, such as the spatial gene expression
-
 matrix and the target space coordinates.
 
 6. Optional: plot spatial gene expression patterns.
@@ -68,19 +65,19 @@ matrix and the target space coordinates.
 
 ## Demonstration code
 We provide scripts that spatially reconstruct two of the tissues presented
-in the paper: the intestinal epithelium [Moor, AE, et al., Cell, 2018] and the stage 6 Drosophila 
-embryo ([Berkley Drosophila Transcription Network Project](http://bdtnp.lbl.gov)).
+in the paper: the intestinal epithelium ([Moor, A.E., *et al*., Cell, 2018](https://www.sciencedirect.com/science/article/pii/S0092867418311644?via%3Dihub))
+and the stage 6 Drosophila embryo ([Berkley Drosophila Transcription Network Project](http://bdtnp.lbl.gov)).
 
 ### The intestinal epithelium
-The 'reconstruct_intestine_denovo.py' script reconstructs the crypt-to-villus axis of the mammalian intestinal epithelium, based on data from [Moor, AE, et al., Cell, 2018]. 
-We do it denovo, meaning without any marker genes or atlas. 
-The script outputs plots of gene expression for a list of genes, as well as Pearson correlations of the reconstructed and original expression values for all genes. 
+The `reconstruct_intestine_denovo.py` script reconstructs the crypt-to-villus axis of the mammalian intestinal epithelium, based on data from Moor *et al*. 
+The reconstruction is performed *de novo*, without using any marker genes. 
+The script outputs plots of gene expression for a list of genes, as well as Pearson correlations of the reconstructed and original expression values for all genes.
 
 Running time on a standard desktop computer is around XXX minutes.
 
 ### The *Drosophila* embryo
 The `reconstruct_bdtnp_with_markers.py` script reconstructs the early
-*Drosophila* embryo with only a handful of markers, based on the BDTNP dataset [http://bdtnp.lbl.gov]. 
+*Drosophila* embryo with only a handful of markers, based on the BDTNP dataset. 
 All cells are used and
 a random set of 1-4 markers is selected. The script outputs plots of
 gene expression for a list of genes, as well as Pearson correlations of the
@@ -88,7 +85,7 @@ reconstructed and original expression values for all genes.
 Notice that the results depend on which marker genes are selected. 
 In the manuscript we averaged the results over many different choices of marker genes.
 
-Running time on a desktop computer with two cores is around 6-7 minutes.
+Running time on a standard desktop computer is around 6-7 minutes.
 
 ## Running novoSpaRc on your data
 A template file for running `novoSpaRc` on custom datasets is 
