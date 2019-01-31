@@ -71,7 +71,7 @@ and the stage 6 Drosophila embryo ([Berkley Drosophila Transcription Network Pro
 ### The intestinal epithelium
 The `reconstruct_intestine_denovo.py` script reconstructs the crypt-to-villus axis of the mammalian intestinal epithelium, based on data from Moor *et al*. 
 The reconstruction is performed *de novo*, without using any marker genes. 
-The script outputs plots of gene expression for a list of genes, as well as Pearson correlations of the reconstructed and original expression values for all genes.
+The script outputs plots of (a) a histogram showing the distribution of assignment values over embedded zones for each original villus zone, and (b) average spatial gene expression over the original villus zones and embedded zones of 4 gene groups.
 
 Running time on a standard desktop computer is around XXX minutes.
 
