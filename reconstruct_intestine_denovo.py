@@ -29,6 +29,7 @@ if __name__ == '__main__':
 
     locations_original = np.loadtxt('datasets/intestine/zones.tsv',skiprows=1,usecols=range(1,4))
     locations_original = locations_original[:,2]
+    grid_len = np.unique(locations_original)
     
     dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
     dge_full = dge.T
@@ -61,7 +62,6 @@ if __name__ == '__main__':
     print ('Reading the target space ... ', end='', flush=True)    
     # Read and use a 1d grid
     
-    grid_len = 7
     locations = np.vstack((range(grid_len),np.ones(grid_len))).T
     
     print ('done')
