@@ -6,7 +6,7 @@ __version__ = "0.1.1"
 __author__ = ["Nikos Karaiskos", "Mor Nitzan"]
 __status__ = "beta"
 __licence__ = "GPL"
-__email__ = ["nikolaos.karaiskos@mdc-berlin.de", "mornitz@gmail.com"]
+__email__ = ["nikolaos.karaiskos@mdc-berlin.de", "mornitzan@fas.harvard.edu"]
 
 ###########
 # imports #
