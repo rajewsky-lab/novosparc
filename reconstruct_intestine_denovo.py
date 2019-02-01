@@ -38,20 +38,21 @@ if __name__ == '__main__':
     num_cells = dge_full.shape[0] # all cells are used
     cells_selected = np.random.choice(dge_full.shape[0], num_cells, replace=False)
     dge_full = dge_full[cells_selected, :]    
+
+    # Compute mean dge over original zones 
+    dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
+    for i in range(grid_len):
+        indices =  np.argwhere(locations_original==i).flatten()
+        temp = np.mean(dge_full[indices,:],axis=0)
+        dge_full_mean[i,:] = temp
+    dge_full_mean = dge_full_mean.T 
     
     # Select variable genes
 #    var_genes = identify_highly_variable_genes(dge_full, do_plot=False)
 #    dge = dge_full[:, var_genes]    
     var_genes = np.argsort(np.divide(np.var(dge_full.T,axis=1),np.mean(dge_full.T,axis=1)+0.0001))
     dge = dge_full[:,var_genes[-100:]]  
-    
-    # Compute mean dge over original zones 
-    dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
-    for i in range(grid_len):
-        indices =  np.argwhere(locations_original==i).flatten()
-        dge_full_mean[i,:] = np.mean(dge_full[indices,:],axis=0)
-    dge_full_mean = dge_full_mean.T 
-    
+        
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     
     ################################
@@ -101,6 +102,7 @@ if __name__ == '__main__':
         indices =  np.argwhere(locations_original==i).flatten()
         temp = np.sum(gw[indices,:],axis=0)
         mean_exp_new_dist[i,:] = temp/np.sum(temp)
+#        mean_exp_new_dist[i,:] = np.mean(gw[indices,:],axis=0)
 
     print (' ... done (', round(time.time()-start_time, 2), 'seconds )')
 
@@ -129,5 +131,3 @@ if __name__ == '__main__':
     plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder='output_intestine/')
     
     
-
-
