@@ -73,7 +73,7 @@ The `reconstruct_intestine_denovo.py` script reconstructs the crypt-to-villus 
 The reconstruction is performed *de novo*, without using any marker genes. 
 The script outputs plots of (a) a histogram showing the distribution of assignment values over embedded zones for each original villus zone, and (b) average spatial gene expression over the original villus zones and embedded zones of 4 gene groups.
 
-Running time on a standard desktop computer is around XXX minutes.
+Running time on a standard computer is under a minute.
 
 ### The *Drosophila* embryo
 The `reconstruct_bdtnp_with_markers.py` script reconstructs the early
