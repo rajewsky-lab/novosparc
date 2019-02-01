@@ -241,9 +241,10 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells):
     plt.clf()
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
+
     plt.figure(figsize=(5,5))
     ax = plt.gca()
-    im = ax.imshow(mean_exp_new_dist.T)
+    im = ax.imshow(mean_exp_new_dist.T,origin='lower')
     my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
     x = range(mean_exp_new_dist.shape[0])
     plt.xticks(x, my_xticks)
@@ -269,43 +270,47 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
         zonated_lst = np.append(zonated_lst, np.argwhere(gene_names == gene))
     zonated_lst = zonated_lst.astype(int)
 
-    plt.subplots(1,1, sharex=True, figsize=(5,4))
-
-    plt.subplot(2,1,1)
+    plt.subplots(2,1, sharex=True, figsize=(7,5.5))
+    
+    plt.subplot(2,1,1)    
     x = range(7)
     y = dge_full_mean[zonated_lst,:].T
     y_AC = np.mean(y[:,0:5],axis=1)
     y_P = y[:,5]
     y_C = np.mean(y[:,6:9],axis=1)
     y_AA = np.mean(y[:,9:],axis=1)
-    line1 = plt.plot(x, y_AA/y_AA.max(),'r*-')
-    line2 = plt.plot(x, y_C/y_C.max(),'g*-')
-    line3 = plt.plot(x, y_P/y_P.max(),'m*-')
-    line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    y = np.vstack((y_AA/y_AA.max(),y_C/y_C.max(),y_P/y_P.max(),y_AC/y_AC.max()))
+    ax = plt.gca()
+    im = ax.imshow(y)
     my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
     plt.xticks(x, my_xticks)
-    plt.yticks([0,0.5,1], ['0','0.5','1'])
     plt.xlabel('Villus zones')
-    plt.legend(('Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol'),loc='center left', bbox_to_anchor=(1, 0.64))
-
-    plt.subplot(2,1,2)
-    x = range(6,-1,-1)
+    my_yticks = ['Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol']
+    plt.yticks(range(len(my_yticks)), my_yticks)
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
+    
+    plt.subplot(2,1,2)    
+    x = range(7)
     y = sdge[zonated_lst,:].T
     y_AC = np.mean(y[:,0:5],axis=1)
     y_P = y[:,5]
     y_C = np.mean(y[:,6:9],axis=1)
     y_AA = np.mean(y[:,9:],axis=1)
-    line1 = plt.plot(x, y_AA/y_AA.max(),'r*-')
-    line2 = plt.plot(x, y_C/y_C.max(),'g*-')
-    line3 = plt.plot(x, y_P/y_P.max(),'m*-')
-    line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    y = np.vstack((y_AA/y_AA.max(),y_C/y_C.max(),y_P/y_P.max(),y_AC/y_AC.max()))
+    ax = plt.gca()
+    im = ax.imshow(y)
     my_xticks = ['0','1','2','3','4','5','6']
-    my_xticks.reverse()
     plt.xticks(x, my_xticks)
-    plt.yticks([0,0.5,1], ['0','0.5','1'])
     plt.xlabel('Embedded zones')
-
+    my_yticks = ['Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol']
+    plt.yticks(range(len(my_yticks)), my_yticks)
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
     plt.tight_layout()
+
     plt.savefig(folder + 'spatial_expression_intestine' + '.png')
     plt.clf()
 
