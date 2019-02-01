@@ -49,8 +49,7 @@ if __name__ == '__main__':
     dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
     for i in range(grid_len):
         indices =  np.argwhere(locations_original==i).flatten()
-        temp = np.mean(dge_full[indices,:],axis=0)
-        dge_full_mean[i,:] = temp
+        dge_full_mean[i,:] = np.mean(dge_full[indices,:],axis=0)
     dge_full_mean = dge_full_mean.T 
     
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
