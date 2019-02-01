@@ -54,7 +54,8 @@ if __name__ == '__main__':
     ######################################
     
     cost_expression, cost_locations = setup_for_OT_reconstruction(dge[:, np.setdiff1d(np.arange(dge.shape[1]), markers_to_use)],
-                                                                  locations, 5)
+                                                                  locations, num_neighbors_source = 5, num_neighbors_target = 5)
+
     cost_marker_genes = cdist(dge[:, markers_to_use]/np.amax(dge[:, markers_to_use]),
                               dge[:, markers_to_use]/np.amax(dge[:, markers_to_use]))
 
