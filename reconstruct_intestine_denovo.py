@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # 3. Setup for the OT reconstruction #
     ######################################
     
-    cost_expression, cost_locations = setup_for_OT_reconstruction_1d(dge, locations, 
+    cost_expression, cost_locations = setup_for_OT_reconstruction(dge, locations, 
                                                                      num_neighbors_source = 5, num_neighbors_target = 2)
     
     # no marker genes are used
