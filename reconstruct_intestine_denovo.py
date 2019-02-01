@@ -33,7 +33,7 @@ if __name__ == '__main__':
     
     dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
     dge_full = dge.T
-    dge_full = np.log2((10**5 * dge_full.T / np.sum(dge_full,axis=1))+1).T
+    dge_full = (dge_full.T / np.sum(dge_full,axis=1)).T
      
     # Optional: downsample number of cells
     num_cells = dge_full.shape[0] # all cells are used
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     
     # Select variable genes
     var_genes = np.argsort(np.divide(np.var(dge_full.T,axis=1),np.mean(dge_full.T,axis=1)+0.0001))
-    dge = dge_full[:,var_genes[-100:]]  
+    dge = dge_full[:,var_genes[-1000:]]  
         
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     
