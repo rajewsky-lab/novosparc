@@ -304,6 +304,9 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     line2 = plt.plot(x, y_C/y_C.max(),'g*-')
     line3 = plt.plot(x, y_P/y_P.max(),'m*-')
     line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
+    plt.xticks(x, my_xticks)
+    plt.yticks([0,0.5,1], ['0','0.5','1'])
     plt.xlabel('Villus zones')
     plt.legend(('Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol'),loc='center left', bbox_to_anchor=(1, 0.64))
 
@@ -318,11 +321,14 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     line2 = plt.plot(x, y_C/y_C.max(),'g*-')
     line3 = plt.plot(x, y_P/y_P.max(),'m*-')
     line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
+    my_xticks = ['0','1','2','3','4','5','6']
+    my_xticks.reverse()
+    plt.xticks(x, my_xticks)
+    plt.yticks([0,0.5,1], ['0','0.5','1'])
     plt.xlabel('Embedded zones')
 
-    plt.tight_layout(pad=0, w_pad=0, h_pad=0.5)
-
-    plt.savefig(folder + '_spatial_expression_intestine_' + '.png')
+    plt.tight_layout()
+    plt.savefig(folder + 'spatial_expression_intestine' + '.png')
     plt.clf()
 
 def plot_dendgrogram(sdge, folder):
