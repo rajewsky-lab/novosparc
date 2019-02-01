@@ -281,7 +281,7 @@ def plot_histogram_intestine(mean_exp_new_dist, folder):
     plt.savefig(folder + 'histogram_intestine' + '.png')
     plt.clf()
 
-def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
+def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
     
     gene_list = ['Apobec1', 'Apob', 'Apoa4', 'Apoa1', 'Npc1l1', 'Slc15a1', 'Slc5a1', 
                  'Slc2a5', 'Slc2a2', 'Slc7a9', 'Slc7a8', 'Slc7a7']
