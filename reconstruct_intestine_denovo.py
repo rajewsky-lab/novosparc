@@ -38,6 +38,7 @@ if __name__ == '__main__':
     num_cells = dge_full.shape[0] # all cells are used
     cells_selected = np.random.choice(dge_full.shape[0], num_cells, replace=False)
     dge_full = dge_full[cells_selected, :]    
+    locations_original = locations_original[cells_selected]
 
     # Compute mean dge over original zones 
     dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
@@ -102,7 +103,6 @@ if __name__ == '__main__':
         indices =  np.argwhere(locations_original==i).flatten()
         temp = np.sum(gw[indices,:],axis=0)
         mean_exp_new_dist[i,:] = temp/np.sum(temp)
-#        mean_exp_new_dist[i,:] = np.mean(gw[indices,:],axis=0)
 
     print (' ... done (', round(time.time()-start_time, 2), 'seconds )')
 
