@@ -122,31 +122,7 @@ def construct_target_grid(num_cells):
 
     return locations
 
-
-def setup_for_OT_reconstruction(dge, locations, num_neighbors=5):
-    start_time = time.time()
-    print ('Setting up for reconstruction ... ', end='', flush=True)
-
-    # Shortest paths matrices at target and source spaces
-    num_neighbors = num_neighbors # number of neighbors for nearest neighbors graph
-    A_locations = kneighbors_graph(locations, num_neighbors, mode='connectivity', include_self=True)
-    G_locations = nx.from_scipy_sparse_matrix(A_locations)
-    sp_locations = nx.floyd_warshall_numpy(G_locations)
-    sp_locations[sp_locations > 5] = 5 #set threshold for shortest paths
-    A_expression = kneighbors_graph(dge, num_neighbors, mode='connectivity', include_self=True)
-    G_expression = nx.from_scipy_sparse_matrix(A_expression)
-    sp_expression = nx.floyd_warshall_numpy(G_expression)
-
-    # Set normalized cost matrices based on shortest paths matrices at target and source spaces
-    cost_locations = sp_locations / sp_locations.max()
-    cost_locations -= np.mean(cost_locations)
-    cost_expression = sp_expression / sp_expression.max()
-    cost_expression -= np.mean(cost_expression)
-
-    print ('done (', round(time.time()-start_time, 2), 'seconds )')
-    return cost_expression, cost_locations
-
-def setup_for_OT_reconstruction_1d(dge, locations, num_neighbors_source = 5, num_neighbors_target = 2):
+def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_neighbors_target = 5):
     start_time = time.time()
     print ('Setting up for reconstruction ... ', end='', flush=True)
 
