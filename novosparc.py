@@ -140,7 +140,7 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_ne
     cost_locations = sp_locations / sp_locations.max()
     cost_locations -= np.mean(cost_locations)
     cost_expression = sp_expression / np.nanmax(sp_expression[sp_expression != np.inf])
-    cost_expression -= np.mean(cost_expression)
+    cost_expression -= np.nanmean(cost_expression[cost_expression != np.inf])
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     return cost_expression, cost_locations
