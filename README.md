@@ -23,7 +23,7 @@ N. Friedman<sup>&</sup> and N. Rajewsky<sup>&</sup>
 [N.Rajewsky](mailto:rajewsky@mdc-berlin.de)
 
 ## Installation and requirements
-A working `Python 2.7/3.5` installation and the following libraries are required: 
+A working `Python` 3.5 installation and the following libraries are required: 
 `matplotlib`, `numpy`, `sklearn`, `scipy`, `ot` and `networkx`.
 Having all dependencies available, `novoSpaRc` can be employed by cloning the 
 repository, modifying the template `reconstruct_tissue.py` accordingly
@@ -61,7 +61,7 @@ matrix and the target space coordinates.
 
 6. Optional: plot spatial gene expression patterns.
 
-7. Optional: identify spatial archetypes. 
+7. Optional: identify and plot spatial archetypes.
 
 ## Demonstration code
 We provide scripts that spatially reconstruct two of the tissues presented
