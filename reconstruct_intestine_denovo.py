@@ -49,8 +49,6 @@ if __name__ == '__main__':
     dge_full_mean = dge_full_mean.T 
     
     # Select variable genes
-#    var_genes = identify_highly_variable_genes(dge_full, do_plot=False)
-#    dge = dge_full[:, var_genes]    
     var_genes = np.argsort(np.divide(np.var(dge_full.T,axis=1),np.mean(dge_full.T,axis=1)+0.0001))
     dge = dge_full[:,var_genes[-100:]]  
         
