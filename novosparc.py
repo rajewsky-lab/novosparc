@@ -290,8 +290,8 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     for gene in gene_list:
         zonated_lst = np.append(zonated_lst, np.argwhere(gene_names == gene))
     zonated_lst = zonated_lst.astype(int)
-    
-    f, axarr = plt.subplots(2,1, sharex=True, figsize=(5,4))
+
+    plt.subplots(1,1, sharex=True, figsize=(5,4))
 
     plt.subplot(2,1,1)
     x = range(7)
@@ -306,7 +306,6 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
     plt.xlabel('Villus zones')
     plt.legend(('Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol'),loc='center left', bbox_to_anchor=(1, 0.64))
-    plt.ylim(0,1.01)
 
     plt.subplot(2,1,2)
     x = range(6,-1,-1)
@@ -320,13 +319,11 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     line3 = plt.plot(x, y_P/y_P.max(),'m*-')
     line4 = plt.plot(x, y_AC/y_AC.max(),'b*-')
     plt.xlabel('Embedded zones')
-    plt.ylim(0,1.01)
 
-    plt.tight_layout(pad=0, w_pad=0.5, h_pad=0.5)
+    plt.tight_layout(pad=0, w_pad=0, h_pad=0.5)
 
-    plt.savefig(folder + 'spatial_expression_intestine' + '.png')
+    plt.savefig(folder + '_spatial_expression_intestine_' + '.png')
     plt.clf()
-    
 
 def plot_dendgrogram(sdge, folder):
     """Plots the dendrogram of the hierarchical clustering to inspect and choose
