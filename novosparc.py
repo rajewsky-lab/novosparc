@@ -283,12 +283,13 @@ def plot_histogram_intestine(mean_exp_new_dist, folder):
 
 def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
     
-    zonated_lst = np.array([gene_name.index('Apobec1'),gene_name.index('Apob'),
-                            gene_name.index('Apoa4'),gene_name.index('Apoa1'),
-                            gene_name.index('Npc1l1'),gene_name.index('Slc15a1'),
-                            gene_name.index('Slc5a1'),gene_name.index('Slc2a5'),
-                            gene_name.index('Slc2a2'),gene_name.index('Slc7a9'),
-                            gene_name.index('Slc7a8'),gene_name.index('Slc7a7')])
+    gene_list = ['Apobec1', 'Apob', 'Apoa4', 'Apoa1', 'Npc1l1', 'Slc15a1', 'Slc5a1', 
+                 'Slc2a5', 'Slc2a2', 'Slc7a9', 'Slc7a8', 'Slc7a7']
+    
+    zonated_lst=[]
+    for gene in gene_list:
+        zonated_lst = np.append(zonated_lst, np.argwhere(gene_names == gene))
+    zonated_lst = zonated_lst.astype(int)
     
     f, axarr = plt.subplots(2,1, sharex=True, figsize=(5,4))
 
