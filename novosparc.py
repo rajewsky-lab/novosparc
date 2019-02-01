@@ -278,7 +278,7 @@ def plot_histogram_intestine(mean_exp_new_dist, folder):
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(im, cax=cax)
     im.set_clim(0, 1)
-    plt.savefig(folder + '_histogram_intestine_' + '.png')
+    plt.savefig(folder + 'histogram_intestine' + '.png')
     plt.clf()
 
 def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
@@ -324,7 +324,7 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_name, folder):
 
     plt.tight_layout(pad=0, w_pad=0.5, h_pad=0.5)
 
-    plt.savefig(folder + '_spatial_expression_intestine_' + '.png')
+    plt.savefig(folder + 'spatial_expression_intestine' + '.png')
     plt.clf()
     
 
