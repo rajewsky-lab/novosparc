@@ -33,6 +33,7 @@ if __name__ == '__main__':
     
     dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
     dge_full = dge.T
+    dge_full = np.log2((10**5 * dge_full.T / np.sum(dge_full,axis=1))+1).T
      
     # Optional: downsample number of cells
     num_cells = dge_full.shape[0] # all cells are used
