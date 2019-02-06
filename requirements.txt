@@ -1,0 +1,6 @@
+matplotlib>=2.2
+numpy>=1.14
+scipy
+scikit-learn>=0.19.1
+networkx
+ot>=0.4
