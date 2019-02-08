@@ -5,7 +5,7 @@ kiwisolver==1.0.1
 matplotlib==3.0.2
 networkx==2.2
 numpy==1.16.1
-POT==0.5.1
+POT
 pyparsing==2.3.1
 python-dateutil==2.8.0
 scikit-learn==0.20.2
