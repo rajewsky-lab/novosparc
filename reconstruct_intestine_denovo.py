@@ -23,15 +23,15 @@ if __name__ == '__main__':
     print ('Loading data ... ', end='', flush=True)
 
     # Read the intestine data
-    zfile = zipfile.ZipFile('datasets/intestine/dge.tsv.zip')
-    zfile.extract('dge.tsv')
-    gene_names = np.genfromtxt('dge.tsv', usecols=0, dtype='str', skip_header=1)
+    # zfile = zipfile.ZipFile('datasets/intestine/dge.tsv.zip')
+    # zfile.extract('dge.tsv')
+    gene_names = np.genfromtxt('novosparc/datasets/intestine/dge.tsv', usecols=0, dtype='str', skip_header=1)
 
-    locations_original = np.loadtxt('datasets/intestine/zones.tsv',skiprows=1,usecols=range(1,4))
+    locations_original = np.loadtxt('novosparc/datasets/intestine/zones.tsv',skiprows=1,usecols=range(1,4))
     locations_original = locations_original[:,2]
     grid_len = len(np.unique(locations_original))
     
-    dge = np.loadtxt('dge.tsv',skiprows=1,usecols=range(1,1384))
+    dge = np.loadtxt('novosprc/datasets/intestine/dge.tsv',skiprows=1,usecols=range(1,1384))
     dge_full = dge.T
     dge_full = (dge_full.T / np.sum(dge_full,axis=1)).T
      
