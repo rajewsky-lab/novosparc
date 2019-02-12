@@ -30,7 +30,6 @@ if __name__ == '__main__':
     cells_selected = np.random.choice(dge_full.shape[0], num_cells, replace=False)
     dge_full = dge_full[cells_selected, :]    
     locations_original = locations_original[cells_selected]
-    num_locations = locations.shape[0]
 
     # Compute mean dge over original zones 
     dge_full_mean = np.zeros((grid_len,dge_full.shape[1]))
@@ -53,6 +52,7 @@ if __name__ == '__main__':
     print ('Reading the target space ... ', end='', flush=True)    
     
     locations = np.vstack((range(grid_len), np.ones(grid_len))).T
+    num_locations = locations.shape[0]
     
     print ('done')
 
