@@ -68,7 +68,7 @@ if __name__ == '__main__':
     cost_marker_genes = np.ones((num_cells, len(locations)))
 
     # Distributions at target and source spaces
-    p_locations, p_expression = novosparc.rc.create_space_distributions(num.locations,
+    p_locations, p_expression = novosparc.rc.create_space_distributions(num_locations,
                                                                         num_cells)
 
     #############################
