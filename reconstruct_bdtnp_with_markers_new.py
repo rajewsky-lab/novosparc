@@ -22,10 +22,9 @@ if __name__ == '__main__':
     dge = np.loadtxt('novosparc/datasets/bdtnp/dge.txt', usecols=range(84), skiprows=1)
 
     # Optional: downsample number of cells
-    # num_cells = int(np.random.randint(504, 800, 1))
-    num_cells = dge.shape[0] # all cells are used
-    cells_selected = np.random.choice(dge.shape[0], num_cells, replace=False)
-    dge = dge[cells_selected, :]    
+    cells_selected, dge = novosparc.pp.subsample_dge(dge, 504, 800)
+    num_cells = dge.shape[0]
+    
     # Choose a number of markers to use for reconstruction
     num_markers = int(np.random.randint(1, 5, 1))
     markers_to_use = np.random.choice(dge.shape[1], num_markers, replace=False)

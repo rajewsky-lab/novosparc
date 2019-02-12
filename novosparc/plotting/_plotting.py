@@ -31,7 +31,7 @@ def plot_gene_pattern(locations, sdge, gene, folder, gene_names, num_cells):
     )
     plt.axis('off')
     # plt.title(gene)
-    plt.savefig(folder + str(num_cells) + '_' + gene + '.png')
+    plt.savefig(folder.replace('/', '') + '/' + str(num_cells) + '_' + gene + '.png')
     plt.clf()
 
     
@@ -51,7 +51,7 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells):
         plt.axis('off')
         idx += 1
     plt.tight_layout()
-    plt.savefig(folder + str(num_cells) + '_cells_'
+    plt.savefig(folder.replace('/', '') + '/' + str(num_cells) + '_cells_'
                 + str(locations.shape[0]) + '_locations' + '.png')
     plt.clf()
 
@@ -100,7 +100,7 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
     my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
     plt.xticks(x, my_xticks)
     plt.xlabel('Villus zones')
-    my_yticks = ['Amino acids','Carbohydrates','Peptides',r'Apolipoproteins' '\n' 'Cholesterol']
+    my_yticks = ['Amino acids','Carbohydrates','Peptides', 'Apolipoproteins' '\n' 'Cholesterol']
     plt.yticks(range(len(my_yticks)), my_yticks)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -134,7 +134,7 @@ def plot_dendrogram(sdge, folder):
     the number of clusters / archetypes."""
     plt.figure(figsize=(25, 10))
     hierarchy.dendrogram(hierarchy.ward(sdge), leaf_rotation=90.)
-    plt.savefig(folder + 'dendrogram.png')
+    plt.savefig(folder.replace('/', '') + '/dendrogram.png')
 
 
 def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folder):
@@ -157,5 +157,5 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
                   '\n'.join(wrap(', '.join(gene_set[which_genes][np.argsort(gene_corrs[which_genes])[-5:]]), 40)))
         idx += 1
         plt.tight_layout()
-        plt.savefig(folder + 'spatial_archetypes.png')
+        plt.savefig(folder.replace('/', '') + '/spatial_archetypes.png')
     print ('done')

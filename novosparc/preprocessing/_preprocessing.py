@@ -14,6 +14,21 @@ def log_normalize_dge(dge):
     """Log-normalize raw counts if needed."""
     return np.round(np.log2(150000 * np.divide(dge, np.sum(dge, axis=0)) + 1), 2)
 
+    
+def subsample_dge(dge, min_num_cells, max_num_cells=None):
+    """Subsample the number of single cells used for the reconstruction.
+    dge -- the gene expression matrix with genes as columns and cells
+    as rows.
+    min_num_cells -- the minimum number of cells to keep.
+    max_num_cells -- the maximum number of cells to keep.
+    Returns the downsampled dge and the cells selected for further analysis."""
+    if max_num_cells == None:
+        max_num_cells = dge.shape[0]
+    num_cells = np.random.randint(min_num_cells, max_num_cells, 1)
+    cells_to_use = np.random.choice(dge.shape[0], num_cells, replace=False)
+    dge = dge[cells_to_use, :]
+    return cells_to_use, dge
+
 
 def introduce_noise(expression, dropouts=0.1, gaussian=False, mu=0,
                     sigma=0.05, false_positives=False):

@@ -13,7 +13,7 @@ with open('requirements.txt', 'r') as f:
 
 setup(
     name="novosparc",
-    version="0.3",
+    version="0.3.1",
     author=__author__,
     author_email=__email__,
     description="De novo spatial reconstruction of single-cell gene expression.",
