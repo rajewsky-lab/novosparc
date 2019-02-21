@@ -1,4 +1,5 @@
 cycler>=0.10.0
+cython
 decorator>=4.3.2
 kiwisolver>=1.0.1
 matplotlib>=2.2
