@@ -1,5 +1,7 @@
 # novoSpaRc - de novo Spatial Reconstruction of single-cell gene expression
 
+|docs|
+
 ## About
 This package is created and maintained by 
 [Nikos Karaiskos](mailto:nikolaos.karaiskos@mdc-berlin.de) and
