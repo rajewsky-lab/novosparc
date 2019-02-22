@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/novosparc-nukappa/badge/?version=latest)](https://novosparc-nukappa.readthedocs.io/en/latest/?badge=latest)
+
 # novoSpaRc - de novo Spatial Reconstruction of single-cell gene expression
 
 ## About
