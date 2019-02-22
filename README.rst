@@ -6,7 +6,7 @@
 novoSpaRc - *de novo* Spatial Reconstruction of Single-Cell Gene Expression
 ===========================================================================
 
-.. image:: .images/novosparc.png
+.. image:: https://raw.githubusercontent.com/nukappa/nukappa.github.io/master/images/novosparc.png
    :width: 90px
    :align: left
 
