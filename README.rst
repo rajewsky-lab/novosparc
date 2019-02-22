@@ -6,7 +6,7 @@
 novoSpaRc - *de novo* Spatial Reconstruction of Single-Cell Gene Expression
 ===========================================================================
 
-.. image:: ../.images/novosparc.png
+.. image:: .images/novosparc.png
    :width: 90px
    :align: left
 
@@ -17,4 +17,6 @@ is not required, but significantly enhances performance if available.
 It is created and maintained by 
 `Nikos Karaiskos <mailto:nikolaos.karaiskos@mdc-berlin.de>`_
 and `Mor Nitzan <mailto:mornitzan@fas.harvard.edu>`_, and
-accompanies [Nitzan18]_.
+accompanies [Nitzan18].
+
+Read the `documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>` for more information.
