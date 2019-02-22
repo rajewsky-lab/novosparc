@@ -19,4 +19,4 @@ It is created and maintained by
 and `Mor Nitzan <mailto:mornitzan@fas.harvard.edu>`_, and
 accompanies [Nitzan18].
 
-Read the `documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>` for more information.
+`Read the documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>`_ for more information.
