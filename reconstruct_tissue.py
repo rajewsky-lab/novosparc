@@ -1,18 +1,12 @@
-#########
-# about #
-#########
-
-__version__ = "0.1"
-__author__ = ["Nikos Karaiskos", "Mor Nitzan"]
-__status__ = "beta"
-__licence__ = "MIT"
-__email__ = ["nikolaos.karaiskos@mdc-berlin.de", "mornitzan@fas.harvard.edu"]
-
 ###########
 # imports #
 ###########
 
-from novosparc import *
+import novosparc
+import time
+import numpy as np
+from scipy.spatial.distance import cdist
+from scipy.stats import pearsonr
 
 if __name__ == '__main__':
 
@@ -31,11 +25,9 @@ if __name__ == '__main__':
     dge = np.loadtxt('/pathto/dge.txt',
                      usecols=range(1, max_cell_number), skiprows=1)
     
-    # Sample the number of cells randomly. 
-    min_cell_number = 250
-    num_cells = int(np.random.randint(min_cell_number, dge.shape[1], 1))
-    dge = dge[:, np.random.choice(dge.shape[1], num_cells, replace=False)]
-    dge_full = np.copy(dge.T)
+    # Optional: downsample number of cells.
+    cells_selected, dge = novosparc.pp.subsample_dge(dge, 500, 800)
+    num_cells = dge.shape[0]
 
     # Optional: Subset to the highly variable genes or other set of genes
     high_var_genes = np.genfromtxt('/pathto/hvg.txt', dtype='str')
@@ -51,7 +43,7 @@ if __name__ == '__main__':
     print ('Constructing the target grid ... ', end='', flush=True)
 
     # Construct a square target grid or read it if available
-    locations = construct_target_grid(num_cells)
+    locations = novosparc.rc.construct_target_grid(num_cells)
     
     print ('done')
 
@@ -60,7 +52,7 @@ if __name__ == '__main__':
     # 3. Setup for the OT reconstruction #
     ######################################
 
-    cost_expression, cost_locations = setup_for_OT_reconstruction(dge, locations, 5)
+    cost_expression, cost_locations = novosparc.rc.setup_for_OT_reconstruction(dge, locations, 5)
 
 
     #############################
@@ -73,8 +65,7 @@ if __name__ == '__main__':
 
     # Distributions at target and source spaces. If unkown uniform distributions
     # should be used.
-    p_locations = ot.unif(len(locations))
-    p_expression = ot.unif(num_cells)
+    p_locations, p_expression = novosparc.rc.create_space_distributions(len(locations), num_cells)
 
     # alpha parameter controls the reconstruction. Set 0 for de novo, between
     # 0 and 1 in case markers are available.
@@ -112,30 +103,6 @@ if __name__ == '__main__':
     ###########################
 
     gene_list_to_plot = ['gene1', 'gene2']
-    plot_gene_patterns(locations, sdge, gene_list_to_plot,
-                       folder='output/', gene_names=gene_names)
-    
-    
-    ##############################
-    # 7. Find spatial archetypes #
-    ##############################
-
-    # Subset to the highly variable genes for finding archetypes
-    sdge_hvc = sdge[np.nonzero(np.in1d(gene_names, high_var_genes))[0], :]
-
-    # Choose the number of archetypes
-    num_archetypes = 16
-    archetypes, clusters, gene_corrs = find_spatial_archetypes(num_clusters=num_archetypes,
-                                                               sdge=sdge_hvc)
-
-    # Plot archetypes
-    plot_archetypes(locations=locations, archetypes=archetypes, clusters=clusters,
-                    gene_corrs=gene_corrs, gene_set=high_var_genes, folder='output/')
-
-    # Find representative genes of archetype 11
-    print (get_genes_from_spatial_archetype(sdge, gene_names, archetypes, 10))
-
-    # Find genes spatially similar to gene 'mfg'
-    print (find_spatially_related_genes(sdge, gene_names, archetypes,
-                                        int(np.where(gene_names == 'mfg')[0])))
+    novosparc.pl.plot_gene_patterns(locations, sdge, gene_list_to_plot,
+                                    folder='output/', gene_names=gene_names)
     

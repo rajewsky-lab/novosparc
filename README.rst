@@ -14,9 +14,10 @@ novoSpaRc - *de novo* Spatial Reconstruction of Single-Cell Gene Expression
 single-cell RNA sequencing data. An existing reference database of marker genes
 is not required, but significantly enhances performance if available.
 
-It is created and maintained by 
-`Nikos Karaiskos <mailto:nikolaos.karaiskos@mdc-berlin.de>`_
-and `Mor Nitzan <mailto:mornitzan@fas.harvard.edu>`_, and
-accompanies [Nitzan18].
+``novoSpaRc`` accompanies the following publication:
 
-`Read the documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>`_ for more information.
+    | *Charting a tissue from single-cell transcriptomes*
+    | M. Nitzan, N. Karaiskos, N. Friedman, N. Rajewsky
+    | `bioRxiv 456350 <https://www.biorxiv.org/content/biorxiv/early/2018/10/30/456350.full.pdf>`_
+
+Read the `documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>`_ for more information.
