@@ -1,0 +1,13 @@
+cycler>=0.10.0
+Cython
+decorator>=4.3.2
+kiwisolver>=1.0.1
+matplotlib>=2.2
+networkx
+numpy
+POT
+pyparsing>=2.3.1
+python-dateutil>=2.8.0
+scikit-learn>=0.20.2
+scipy
+six>=1.12.0

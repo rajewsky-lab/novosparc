@@ -179,7 +179,3 @@ def gromov_wasserstein_adjusted_norm(cost_mat, C1, C2, alpha_linear,p, q, loss_f
     else:
         return T
 
-
-    
-if __name__ == "__main__":
-    pass        
