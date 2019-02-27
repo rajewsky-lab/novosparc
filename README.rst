@@ -2,7 +2,7 @@
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/novosparc.svg
    :target: https://pypi.org/project/novosparc/
-.. |Docs| image:: https://readthedocs.org/projects/novosparc-nukappa/badge/?version=latest
+.. |Docs| image:: https://readthedocs.org/projects/novosparc/badge/?version=latest
    :target: https://novosparc.readthedocs.io/
 
 novoSpaRc - *de novo* Spatial Reconstruction of Single-Cell Gene Expression
@@ -22,4 +22,4 @@ is not required, but significantly enhances performance if available.
     | M. Nitzan, N. Karaiskos, N. Friedman, N. Rajewsky
     | `bioRxiv 456350 <https://www.biorxiv.org/content/biorxiv/early/2018/10/30/456350.full.pdf>`_
 
-Read the `documentation <https://novosparc-nukappa.readthedocs.io/en/latest/>`_ for more information.
+Read the `documentation <https://novosparc.readthedocs.io>`_ for more information.
