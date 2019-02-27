@@ -1,5 +1,7 @@
-|Docs|
+|PyPI| |Docs|
 
+.. |PyPI| image:: https://img.shields.io/pypi/v/novosparc.svg
+   :target: https://pypi.org/project/novosparc/
 .. |Docs| image:: https://readthedocs.org/projects/novosparc-nukappa/badge/?version=latest
    :target: https://novosparc-nukappa.readthedocs.io/en/latest/
 
