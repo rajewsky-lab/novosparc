@@ -6,7 +6,7 @@ __email__ = ', '.join([
     'nikolaos.karaiskos@mdc-berlin.de',
     'mornitzan@fas.harvard.edu'
 ])
-# __version__ = '0.2.2' # automate
+__version__ = '0.3.5'
 
 from . import plotting as pl
 from . import preprocessing as pp

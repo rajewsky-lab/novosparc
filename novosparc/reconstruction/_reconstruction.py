@@ -27,6 +27,9 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_ne
     A_locations = kneighbors_graph(locations, num_neighbors_target, mode='connectivity', include_self=True)
     G_locations = nx.from_scipy_sparse_matrix(A_locations)
     sp_locations = nx.floyd_warshall_numpy(G_locations)
+    sp_locations_max = np.nanmax(sp_locations[sp_locations != np.inf])
+    sp_locations[sp_locations > sp_locations_max] = sp_locations_max #set threshold for shortest paths
+
     num_neighbors_source = num_neighbors_source # number of neighbors for nearest neighbors graph at source
     A_expression = kneighbors_graph(dge, num_neighbors_source, mode='connectivity', include_self=True)
     G_expression = nx.from_scipy_sparse_matrix(A_expression)

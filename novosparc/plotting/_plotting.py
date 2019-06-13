@@ -1,15 +1,5 @@
 from __future__ import print_function
 
-#########
-# about #
-#########
-
-__version__ = "0.2.2"
-__author__ = ["Nikos Karaiskos", "Mor Nitzan"]
-__status__ = "beta"
-__licence__ = "GPL"
-__email__ = ["nikolaos.karaiskos@mdc-berlin.de", "mornitzan@fas.harvard.edu"]
-
 ###########
 # imports #
 ###########
@@ -24,36 +14,65 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # functions #
 #############
 
-def plot_gene_pattern(locations, sdge, gene, folder, gene_names, num_cells):
-    plt.figure(figsize=(2, 1))
-    plt.scatter(locations[:, 0], locations[:, 1], c=sdge[np.argwhere(gene_names == gene), :].flatten(), s=70,
-                          cmap="BuPu" # for zebrafish coloring
-    )
-    plt.axis('off')
-    # plt.title(gene)
-    plt.savefig(folder.replace('/', '') + '/' + str(num_cells) + '_' + gene + '.png')
-    plt.clf()
+def plot_mapped_cells(locations, gw, cells, folder, pt_size=20, cmap='viridis'):
+    """Plots the mapped locations of a cell population.
 
-    
-def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells):
-    """genes are given as a list: ['gene1', 'gene2']"""
+    Keyword arguments:
+    locations -- the locations of the target space
+    gw        -- the Gromow-Wasserstein matrix computed during the reconstruction
+    cells     -- the queried cellls as a numpy array
+    folder    -- the folder to save the .png output.
+    pt_size   -- the size of the points
+    cmap      -- custom colormap. Only used for 2D reconstructions
+    """
+    plt.figure()
+    if locations.shape[1] == 1:
+        plt.scatter(locations, np.sum(gw[cells, :], axis=0), s=pt_size)
+    if locations.shape[1] == 2:
+        plt.scatter(locations[:, 0], locations[:, 1],
+            c=np.sum(gw[cells, :], axis=0), s=pt_size, cmap=cmap)
+    plt.savefig(folder.replace('/', '') + 'mapped_cells.png')
+    plt.close()
+
+
+def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
+                       size_x=16, size_y=12, pt_size=20, cmap='viridis'):
+    """Plots gene expression patterns on the target space.
+
+    Keyword arguments:
+    locations  -- the locations of the target space
+    sdge       -- the sdge computed from the reconstruction
+    genes      -- the genes to plot as a list: ['gene1', 'geme2', ...]
+    folder     -- the folder to save the .png output.
+    gene_names -- an numpy array of all genes appearing in the sdge
+    num_cells  -- the number of cells used for the reconstruction
+    size_x     -- the width of the resulting figure
+    size_y     -- the height of the resulting figure
+    pt_size    -- the size of the points
+    cmap       -- custom colormap. Only used for 2D reconstructions
+    """
     num_rows = int(round(np.sqrt(len(genes))))
-    xf = len(np.unique(locations[:, 0]))
-    yf = len(np.unique(locations[:, 1]))
-    plt.figure(figsize=(12, 8)) # (8, 4) for zebrafish, (18, 10) for half bdtnp genes # (12, 8) for cell cycle
+    plt.figure(figsize=(size_x, size_y))
+    
     idx = 1
     for gene in genes:
         plt.subplot(num_rows, np.ceil(len(genes)/num_rows), idx)
-        plt.scatter(locations[:, 0], locations[:, 1], c=sdge[np.argwhere(gene_names == gene), :].flatten(),
-                  # cmap="BuPu" # for zebrafish coloring
-        )
+        if locations.shape[1] == 1:
+            plt.scatter(locations, sdge[np.argwhere(gene_names == gene), :].flatten(),
+                        s=pt_size)
+        if locations.shape[1] == 2:
+            plt.scatter(locations[:, 0], locations[:, 1], 
+                        c=sdge[np.argwhere(gene_names == gene), :].flatten(),
+                        s=pt_size, cmap=cmap)
         plt.title(gene)
         plt.axis('off')
         idx += 1
+            
     plt.tight_layout()
-    plt.savefig(folder.replace('/', '') + '/' + str(num_cells) + '_cells_'
+    plt.savefig(folder.replace('/', '') + str(num_cells) + '_cells_'
                 + str(locations.shape[0]) + '_locations' + '.png')
-    plt.clf()
+    plt.close()
+    
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
 
@@ -126,25 +145,29 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
     plt.colorbar(im, cax=cax)
     plt.tight_layout()
 
-    plt.savefig(folder + 'spatial_expression_intestine' + '.png')
+    plt.savefig(folder.replace('/', '') + 'spatial_expression_intestine' + '.png')
     plt.clf()
 
-def plot_dendrogram(sdge, folder):
+def plot_dendrogram(sdge, folder, size_x=25, size_y=10):
     """Plots the dendrogram of the hierarchical clustering to inspect and choose
-    the number of clusters / archetypes."""
-    plt.figure(figsize=(25, 10))
+    the number of clusters / archetypes.
+    """
+    plt.figure(figsize=(size_x, size_y))
     hierarchy.dendrogram(hierarchy.ward(sdge), leaf_rotation=90.)
     plt.savefig(folder.replace('/', '') + '/dendrogram.png')
 
 
 def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folder):
     """Plots the spatial archetypes onto a file.
-    locations -- the grid / target space
+    
+    Keyword arguments:
+    locations  -- the locations of the target space
     archetypes -- the spatial archetypes
     clusters   -- the clusters
     gene_corrs -- the gene correlations
-    gene_set   -- the genes that were used to find the archetypes """
-    print ('Plotting gene archetypes ... ', flush=True, end='')
+    gene_set   -- the genes that were used to find the archetypes
+    """
+    
     num_rows = int(round(np.sqrt(max(clusters))))
     plt.figure(figsize=(num_rows*2.5*2, num_rows*2.5))
     idx = 1
@@ -158,4 +181,4 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
         idx += 1
         plt.tight_layout()
         plt.savefig(folder.replace('/', '') + '/spatial_archetypes.png')
-    print ('done')
+    plt.close()
