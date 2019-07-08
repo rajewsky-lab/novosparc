@@ -14,7 +14,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 # functions #
 #############
 
-def plot_mapped_cells(locations, gw, cells, folder, pt_size=20, cmap='viridis'):
+def plot_mapped_cells(locations, gw, cells, folder, 
+                      size_x=16, size_y=12, pt_size=20, cmap='viridis'):
     """Plots the mapped locations of a cell population.
 
     Keyword arguments:
@@ -25,13 +26,13 @@ def plot_mapped_cells(locations, gw, cells, folder, pt_size=20, cmap='viridis'):
     pt_size   -- the size of the points
     cmap      -- custom colormap. Only used for 2D reconstructions
     """
-    plt.figure()
+    plt.figure(figsize=(size_x, size_y))
     if locations.shape[1] == 1:
         plt.scatter(locations, np.sum(gw[cells, :], axis=0), s=pt_size)
     if locations.shape[1] == 2:
         plt.scatter(locations[:, 0], locations[:, 1],
             c=np.sum(gw[cells, :], axis=0), s=pt_size, cmap=cmap)
-    plt.savefig(folder.replace('/', '') + 'mapped_cells.png')
+    plt.savefig(folder.replace('/', '') + '/' + 'mapped_cells.png')
     plt.close()
 
 
@@ -69,14 +70,14 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
         idx += 1
             
     plt.tight_layout()
-    plt.savefig(folder.replace('/', '') + str(num_cells) + '_cells_'
-                + str(locations.shape[0]) + '_locations' + '.png')
+    plt.savefig(folder.replace('/', '') + '/' 
+        + str(num_cells) + '_cells_'
+        + str(locations.shape[0]) + '_locations' + '.png')
     plt.close()
     
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
-
-    plt.figure(figsize=(5,5))
+    plt.figure(figsize=(5, 5))
     ax = plt.gca()
     im = ax.imshow(mean_exp_new_dist.T,origin='lower')
     my_xticks = ['crypt','V1','V2','V3','V4','V5','V6']
