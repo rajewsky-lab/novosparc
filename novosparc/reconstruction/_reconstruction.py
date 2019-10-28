@@ -11,8 +11,9 @@ from scipy.spatial.distance import cdist
 from scipy.cluster import hierarchy
 from scipy.stats import pearsonr
 import ot
-import networkx as nx
 import time
+from scipy.sparse.csgraph import dijkstra
+from scipy.sparse import csr_matrix
 
 #############
 # functions #
@@ -25,15 +26,13 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_ne
     # Shortest paths matrices at target and source spaces
     num_neighbors_target = num_neighbors_target # number of neighbors for nearest neighbors graph at target
     A_locations = kneighbors_graph(locations, num_neighbors_target, mode='connectivity', include_self=True)
-    G_locations = nx.from_scipy_sparse_matrix(A_locations)
-    sp_locations = nx.floyd_warshall_numpy(G_locations)
+    sp_locations = dijkstra(csgraph = csr_matrix(A_locations), directed = False,return_predecessors = False)
     sp_locations_max = np.nanmax(sp_locations[sp_locations != np.inf])
     sp_locations[sp_locations > sp_locations_max] = sp_locations_max #set threshold for shortest paths
 
     num_neighbors_source = num_neighbors_source # number of neighbors for nearest neighbors graph at source
     A_expression = kneighbors_graph(dge, num_neighbors_source, mode='connectivity', include_self=True)
-    G_expression = nx.from_scipy_sparse_matrix(A_expression)
-    sp_expression = nx.floyd_warshall_numpy(G_expression)
+    sp_expression = dijkstra(csgraph = csr_matrix(A_expression), directed = False, return_predecessors = False) 
     sp_expression_max = np.nanmax(sp_expression[sp_expression != np.inf])
     sp_expression[sp_expression > sp_expression_max] = sp_expression_max #set threshold for shortest paths
 
