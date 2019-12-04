@@ -19,7 +19,7 @@ is not required, but significantly enhances performance if available.
 ``novoSpaRc`` accompanies the following publication:
 
     | *Gene Expression Cartography*
-    | M. Nitzan, N. Karaiskos, N. Friedman, N. Rajewsky
+    | M. Nitzan<sup>*</sup>, N. Karaiskos<sup>*</sup>, N. Friedman, N. Rajewsky
     | `Nature (2019) <https://www.nature.com/articles/s41586-019-1773-3>`_
 
 Read the `documentation <https://novosparc.readthedocs.io>`_ for more information.
