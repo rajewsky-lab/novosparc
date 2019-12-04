@@ -5,6 +5,7 @@ from __future__ import print_function
 ###########
 
 import numpy as np
+from matplotlib.image import imread
 
 #############
 # functions #
@@ -27,5 +28,18 @@ def construct_target_grid(num_cells):
     x = np.arange(grid_dim * beta)
     y = np.arange(grid_dim / beta)
     locations = np.array([(i, j) for i in x for j in y])
+
+    return locations
+
+def create_target_space_from_image(image):
+    """Create a tissue target space from a given image. The image is assumed to
+    contain a black-colored tissue space in white background.
+    image -- the location of the image on the disk."""
+    img = imread(image)
+    img_width = img.shape[1]
+    img_height = img.shape[0]
+
+    locations = np.array([(x, y) for x in range(img_width) for y in range(img_height)
+                          if sum(img[y, x, :] == np.array([0, 0, 0]))])
 
     return locations
