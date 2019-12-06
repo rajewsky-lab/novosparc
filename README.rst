@@ -18,8 +18,8 @@ is not required, but significantly enhances performance if available.
 
 ``novoSpaRc`` accompanies the following publication:
 
-    | *Charting a tissue from single-cell transcriptomes*
+    | *Gene Expression Cartography*
     | M. Nitzan, N. Karaiskos, N. Friedman, N. Rajewsky
-    | `bioRxiv 456350 <https://www.biorxiv.org/content/biorxiv/early/2018/10/30/456350.full.pdf>`_
+    | `Nature (2019) <https://www.nature.com/articles/s41586-019-1773-3>`_
 
 Read the `documentation <https://novosparc.readthedocs.io>`_ for more information.
