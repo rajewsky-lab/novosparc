@@ -13,7 +13,7 @@ The code is partially based on adjustments of the `POT (Python Optimal Transport
 PyPI
 ~~~~
 
-To instsall ``novoSpaRc`` try::
+To install ``novoSpaRc`` try::
 
     pip install novoSpaRc
 
