@@ -53,3 +53,18 @@ A template file for running ``novoSpaRc`` on custom datasets is
 provided (``reconstruct_tissue.py``). To successfully run ``novoSpaRc`` modify the
 template file accordingly.
 
+Constructing different grid shapes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We advise to use ```novoSpaRc`` with diverse target spaces to assess how robust
+the spatial reconstructions are. A straightforward way to create a target space
+which is more interesting than a square grid, is to have a simple image with the
+target space painted in black on it, such as the one below:
+
+.. image:: https://raw.githubusercontent.com/nukappa/nukappa.github.io/master/images/tissue_example.png
+   :width: 200px
+   :align: center
+
+Then use the function ``create_target_space_from_image`` from the geometry module
+to read the image and create a target space out of it. It is advisable to
+sample a number of all the read locations and not use them all.
+
