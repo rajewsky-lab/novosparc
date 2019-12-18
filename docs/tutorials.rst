@@ -24,7 +24,9 @@ Demonstration
 ~~~~~~~~~~~~~
 We provide scripts that spatially reconstruct two of the tissues presented
 in the paper: the intestinal epithelium [Moor18]_ and the stage 6 Drosophila embryo
-[BDTNP]_.
+[BDTNP]_. 
+
+See also our `tutorial <https://github.com/rajewsky-lab/novosparc/blob/master/reconstruct_drosophila_embryo_tutorial.ipynb>`_ on reconstructing the Drosophila embryo.
 
 The intestinal epithelium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
