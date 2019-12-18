@@ -22,4 +22,5 @@ is not required, but significantly enhances performance if available.
     | M. Nitzan, N. Karaiskos, N. Friedman, N. Rajewsky
     | `Nature (2019) <https://www.nature.com/articles/s41586-019-1773-3>`_
 
-Read the `documentation <https://novosparc.readthedocs.io>`_ for more information.
+Read the `documentation <https://novosparc.readthedocs.io>`_ and the 
+`tutorial <https://github.com/rajewsky-lab/novosparc/blob/master/reconstruct_drosophila_embryo_tutorial.ipynb>`_ for more information.
