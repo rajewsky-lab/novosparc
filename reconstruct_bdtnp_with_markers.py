@@ -80,21 +80,21 @@ if __name__ == '__main__':
     # 5. Write data to disk for further use #
     #########################################
 
-    novosparc.rc.write_sdge_to_disk(sdge, num_cells, num_locations, 'output_bdtnp_test')
+    novosparc.rc.write_sdge_to_disk(sdge, num_cells, num_locations, 'output_bdtnp')
     ###########################
     # 6. Plot gene expression #
     ###########################
 
     gene_list_to_plot = ['ftz', 'Kr', 'sna', 'zen2']
     novosparc.pl.plot_gene_patterns(locations, sdge, gene_list_to_plot,
-                                    folder='output_bdtnp_test/',
+                                    folder='output_bdtnp/',
                                     gene_names=gene_names, num_cells=num_cells)
 
     ###################################
     # 7. Correlate results with BDTNP #
     ###################################
     
-    with open('output_bdtnp_test/results.txt', 'a') as f:
+    with open('output_bdtnp/results.txt', 'a') as f:
         f.write('number_cells,,number_markers,' +  ','.join(gene_names) + '\n')
         f.write(str(num_cells) + ',' + str(num_markers) + ',')
         for i in range(len(gene_names)):
@@ -105,7 +105,7 @@ if __name__ == '__main__':
     ############################################
     important_gene_names = novosparc.analysis.morans(sdge, gene_names, locations)
     novosparc.pl.plot_gene_patterns(locations, sdge, important_gene_names,
-                                    folder='output_bdtnp_test/',
+                                    folder='output_bdtnp/',
                                     gene_names=gene_names, num_cells=num_cells, prefix='_spatially_important_')
 
 
