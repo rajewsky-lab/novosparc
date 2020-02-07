@@ -9,7 +9,7 @@ mpl.use('agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-
+import os
 #############
 # functions #
 #############
@@ -32,7 +32,7 @@ def plot_mapped_cells(locations, gw, cells, folder,
     if locations.shape[1] == 2:
         plt.scatter(locations[:, 0], locations[:, 1],
             c=np.sum(gw[cells, :], axis=0), s=pt_size, cmap=cmap)
-    plt.savefig(folder.replace('/', '') + '/' + 'mapped_cells.png')
+    plt.savefig(os.path.join(folder, 'mapped_cells.png'))
     plt.close()
 
 
@@ -70,9 +70,8 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
         idx += 1
             
     plt.tight_layout()
-    plt.savefig(folder.replace('/', '') + '/' 
-        + str(num_cells) + '_cells_'
-        + str(locations.shape[0]) + '_locations' + prefix + '.png')
+    plt.savefig(os.path.join(folder, str(num_cells) + '_cells_'
+        + str(locations.shape[0]) + '_locations' + prefix + '.png'))
     plt.close()
     
 
@@ -92,7 +91,7 @@ def plot_histogram_intestine(mean_exp_new_dist, folder):
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(im, cax=cax)
     im.set_clim(0, 1)
-    plt.savefig(folder + 'histogram_intestine' + '.png')
+    plt.savefig(os.path.join(folder, 'histogram_intestine.png'))
     plt.clf()
 
 def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
@@ -146,7 +145,7 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
     plt.colorbar(im, cax=cax)
     plt.tight_layout()
 
-    plt.savefig(folder.replace('/', '') + 'spatial_expression_intestine' + '.png')
+    plt.savefig(os.path.joint(folder, 'spatial_expression_intestine.png'))
     plt.clf()
 
 def plot_dendrogram(sdge, folder, size_x=25, size_y=10):
@@ -155,7 +154,7 @@ def plot_dendrogram(sdge, folder, size_x=25, size_y=10):
     """
     plt.figure(figsize=(size_x, size_y))
     hierarchy.dendrogram(hierarchy.ward(sdge), leaf_rotation=90.)
-    plt.savefig(folder.replace('/', '') + '/dendrogram.png')
+    plt.savefig(os.path.join(folder, 'dendrogram.png'))
 
 
 def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folder):
@@ -181,5 +180,5 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
                   '\n'.join(wrap(', '.join(gene_set[which_genes][np.argsort(gene_corrs[which_genes])[-5:]]), 40)))
         idx += 1
         plt.tight_layout()
-        plt.savefig(folder.replace('/', '') + '/spatial_archetypes.png')
+        plt.savefig(os.path.join(folder, 'spatial_archetypes.png'))
     plt.close()

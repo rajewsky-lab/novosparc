@@ -7,6 +7,7 @@ import time
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.stats import pearsonr
+import os
 
 if __name__ == '__main__':
 
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     dge = np.loadtxt('novosparc/datasets/bdtnp/dge.txt', usecols=range(84), skiprows=1)
 
     # Optional: downsample number of cells
-    cells_selected, dge = novosparc.pp.subsample_dge(dge, 2000, 2500)
+    cells_selected, dge = novosparc.pp.subsample_dge(dge, 500, 1000)
     num_cells = dge.shape[0]
     
     # Choose a number of markers to use for reconstruction
@@ -30,7 +31,13 @@ if __name__ == '__main__':
     markers_to_use = np.random.choice(dge.shape[1], num_markers, replace=False)
 
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
-    
+
+    # Choose the output folder and create it if it doesn't exist
+    dirname = os.path.dirname(__file__)
+    output_folder = os.path.join(dirname, 'output_bdtnp')
+    if os.path.exists(output_folder) == False:
+        os.mkdir(output_folder)
+
     ################################
     # 2. Set the target space grid #
     ################################
@@ -80,21 +87,21 @@ if __name__ == '__main__':
     # 5. Write data to disk for further use #
     #########################################
 
-    novosparc.rc.write_sdge_to_disk(sdge, num_cells, num_locations, 'output_bdtnp')
+    novosparc.rc.write_sdge_to_disk(sdge, num_cells, num_locations, output_folder)
     ###########################
     # 6. Plot gene expression #
     ###########################
 
     gene_list_to_plot = ['ftz', 'Kr', 'sna', 'zen2']
     novosparc.pl.plot_gene_patterns(locations, sdge, gene_list_to_plot,
-                                    folder='output_bdtnp/',
+                                    folder=output_folder,
                                     gene_names=gene_names, num_cells=num_cells)
 
     ###################################
     # 7. Correlate results with BDTNP #
     ###################################
     
-    with open('output_bdtnp/results.txt', 'a') as f:
+    with open(os.path.join(output_folder, 'results.txt'), 'a') as f:
         f.write('number_cells,,number_markers,' +  ','.join(gene_names) + '\n')
         f.write(str(num_cells) + ',' + str(num_markers) + ',')
         for i in range(len(gene_names)):
@@ -103,9 +110,9 @@ if __name__ == '__main__':
     ############################################
     # 8. Calculate spatially informative genes #
     ############################################
-    important_gene_names = novosparc.analysis.morans(sdge, gene_names, locations)
+    important_gene_names = novosparc.analysis.morans(sdge, gene_names, locations, folder=output_folder, selected_genes=gene_names[:30])
     novosparc.pl.plot_gene_patterns(locations, sdge, important_gene_names,
-                                    folder='output_bdtnp/',
+                                    folder=output_folder,
                                     gene_names=gene_names, num_cells=num_cells, prefix='_spatially_important_')
 
 

@@ -3,15 +3,22 @@ import pysal.lib
 from pysal.explore.esda.moran import Moran
 import time
 from multiprocessing import Pool
+import os
 
 def pool_wrapper(args):
     mi_ = Moran(*args)
     return mi_.I, mi_.p_norm
 
-def morans(sdge, gene_names, locations, folder, num_important_genes=10):
+def morans(sdge, gene_names, locations, folder, selected_genes=None, num_important_genes=10):
     """Calculates Moran's I metric to select for spatially informative genes"""
 
     start_time = time.time()
+
+    if selected_genes is not None:
+        selected_genes = np.asarray(selected_genes)
+        gene_indices = np.nonzero(np.in1d(gene_names, selected_genes))[0]
+        sdge = sdge[gene_indices, :]
+        gene_names = selected_genes
 
     num_genes = sdge.shape[0]
 
@@ -42,9 +49,8 @@ def morans(sdge, gene_names, locations, folder, num_important_genes=10):
     results =  np.column_stack((gene_names, mi, mi_pval))
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
 
-    np.savetxt(folder.replace('/', '') + '/' 
-        + str(num_genes) + '_genes_'
-        + str(locations.shape[0]) + '_locations_' + 'morans' + '.txt', results, delimiter="\t", fmt="%s")
+    np.savetxt(os.path.join(folder, str(num_genes) + '_genes_'
+        + str(locations.shape[0]) + '_locations_' + 'morans.txt'), results, delimiter="\t", fmt="%s")
 
     return important_gene_names
 

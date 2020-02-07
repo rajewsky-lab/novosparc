@@ -14,6 +14,7 @@ import ot
 import time
 from scipy.sparse.csgraph import dijkstra
 from scipy.sparse import csr_matrix
+import os
 
 #############
 # functions #
@@ -63,8 +64,8 @@ def write_sdge_to_disk(sdge, num_cells, num_locations, folder):
     folder    -- the folder to output the file"""
     start_time = time.time()
     print ('Writing data to disk ...', end='', flush=True)
-    np.savetxt(folder.replace('/', '') + '/sdge_' + str(num_cells) + '_cells_'
-               + str(num_locations) + '_locations.txt', sdge, fmt='%.4e')
+    np.savetxt(os.path.join(folder, 'sdge_' + str(num_cells) + '_cells_'
+               + str(num_locations) + '_locations.txt'), sdge, fmt='%.4e')
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
     
     

@@ -2,6 +2,10 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.3.10 :small:`07 February 2020`
+---------------------------------------
+Added Moran's I algorithm to detect spatially informative genes.
+
 Version 0.3.7 :small:`29 October 2019`
 ---------------------------------------
 Updated computation of shortest paths that singificantly reduces
