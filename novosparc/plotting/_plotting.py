@@ -37,7 +37,7 @@ def plot_mapped_cells(locations, gw, cells, folder,
 
 
 def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
-                       size_x=16, size_y=12, pt_size=20, cmap='viridis'):
+                       size_x=16, size_y=12, pt_size=20, cmap='viridis', prefix=''):
     """Plots gene expression patterns on the target space.
 
     Keyword arguments:
@@ -72,7 +72,7 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
     plt.tight_layout()
     plt.savefig(folder.replace('/', '') + '/' 
         + str(num_cells) + '_cells_'
-        + str(locations.shape[0]) + '_locations' + '.png')
+        + str(locations.shape[0]) + '_locations' + prefix + '.png')
     plt.close()
     
 
