@@ -2,6 +2,10 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.3.11 :small:`27 April 2020`
+---------------------------------------
+Moran's I algorithm for spatially informative genes is implemented and removed pysal dependency.
+
 Version 0.3.10 :small:`07 February 2020`
 ---------------------------------------
 Added Moran's I algorithm to detect spatially informative genes.
