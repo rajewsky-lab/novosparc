@@ -145,7 +145,7 @@ def plot_spatial_expression_intestine(dge_full_mean, sdge, gene_names, folder):
     plt.colorbar(im, cax=cax)
     plt.tight_layout()
 
-    plt.savefig(os.path.joint(folder, 'spatial_expression_intestine.png'))
+    plt.savefig(os.path.join(folder, 'spatial_expression_intestine.png'))
     plt.clf()
 
 def plot_dendrogram(sdge, folder, size_x=25, size_y=10):
