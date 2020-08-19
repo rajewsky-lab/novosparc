@@ -14,6 +14,21 @@ def log_normalize_dge(dge):
     """Log-normalize raw counts if needed."""
     return np.round(np.log2(150000 * np.divide(dge, np.sum(dge, axis=0)) + 1), 2)
 
+def subsample_dataset(dataset, min_num_cells, max_num_cells=None):
+    """Subsample the number of single cells used for the reconstruction for the dataset.
+    dataset -- anndata object for the current dataset
+    min_num_cells -- the minimum number of cells to keep.
+    max_num_cells -- the maximum number of cells to keep.
+    Returns the downsampled anndata object and the cell indices selected for further analysis."""
+    num_cells_in_data = len(dataset.obs)
+
+    if max_num_cells == None:
+        max_num_cells = num_cells_in_data
+
+    num_cells = np.random.randint(min_num_cells, max_num_cells, 1)
+    cells_to_use = np.random.choice(num_cells_in_data, num_cells, replace=False)
+
+    return cells_to_use, dataset[cells_to_use] 
     
 def subsample_dge(dge, min_num_cells, max_num_cells=None):
     """Subsample the number of single cells used for the reconstruction.
