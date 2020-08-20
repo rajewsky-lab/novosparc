@@ -11,3 +11,4 @@ python-dateutil>=2.8.0
 scikit-learn>=0.22.1
 scipy
 six>=1.12.0
+scanpy
