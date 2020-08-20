@@ -10,6 +10,13 @@ import numpy as np
 # functions #
 #############
 
+def subset_to_hvg(dataset, gene_list=None, hvg_file=None):
+    if hvg_file is not None:
+        gene_list = np.genfromtxt(hvg_file, dtype='str')
+
+    return dataset[:,dataset.var.index.isin(gene_list)], gene_list
+
+
 def log_normalize_dge(dge):
     """Log-normalize raw counts if needed."""
     return np.round(np.log2(150000 * np.divide(dge, np.sum(dge, axis=0)) + 1), 2)

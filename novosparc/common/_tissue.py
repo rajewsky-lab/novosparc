@@ -8,12 +8,12 @@ class Tissue():
 	"""The class that handles the processes for the tissue reconstruction. It is responsible for keeping
 	the data, creating the reconstruction and saving the results."""
 
-	def __init__(self, dataset, locations, output_folder):
+	def __init__(self, dataset, locations, output_folder=None):
 		"""Initialize the tissue using the dataset and locations.
 		dataset -- Anndata object for the single cell data
 		locations -- target space locations
 		output_folder -- folder path to save the plots and data"""
-
+		self.dataset = dataset
 		self.dge = dataset.X
 		self.locations = locations
 		self.num_cells = len(dataset.obs)
@@ -21,7 +21,7 @@ class Tissue():
 		self.gene_names = np.array(dataset.var.index.tolist())
 
 		# if the output folder does not exist, create one
-		if not os.path.exists(output_folder):
+		if output_folder is not None and not os.path.exists(output_folder):
 			os.mkdir(output_folder)
 		self.output_folder = output_folder
 
@@ -58,7 +58,7 @@ class Tissue():
 		costs = {'expression':cost_expression,'locations': cost_locations,'markers': cost_marker_genes}
 		self.costs = costs
 
-	def reconstruct(self, alpha_linear):
+	def reconstruct(self, alpha_linear, epsilon=5e-4):
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
 		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
 		"""
@@ -72,10 +72,16 @@ class Tissue():
 
 		gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
 												  alpha_linear, p_expression, p_locations,
-												  'square_loss', epsilon=5e-4, verbose=True)
+												  'square_loss', epsilon=epsilon, verbose=True)
 		sdge = np.dot(self.dge.T, gw)
 		self.gw = gw
 		self.sdge = sdge
+
+	def calculate_sdge_for_all_genes(self):
+		raw_data = self.dataset.raw.to_adata()
+		dge_full = raw_data.X
+		sdge_full = np.dot(dge_full.T, self.gw)
+		return sdge_full
 
 	def calculate_spatially_informative_genes(self, selected_genes=None):
 		"""Calculate spatially informative genes using Moran's I
