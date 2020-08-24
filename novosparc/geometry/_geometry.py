@@ -6,10 +6,73 @@ from __future__ import print_function
 
 import numpy as np
 from matplotlib.image import imread
-
+import math
+import random
 #############
 # functions #
 #############
+
+def construct_torus(num_cells):
+    num_pts = num_cells
+    indices = np.arange(0, int(np.sqrt(num_pts)), dtype=float) + 0.5
+
+    angle = np.linspace(0, 2 * np.pi, int(np.sqrt(num_pts)))
+    theta, phi = np.meshgrid(angle, indices)
+
+    r, R = .25, 1.
+    x = (R + r * np.cos(phi)) * np.cos(theta)
+    y = (R + r * np.cos(phi)) * np.sin(theta)
+    z = r * np.sin(phi)
+
+    locations = np.array(list(zip(x, y, z)))
+    
+    return locations
+
+def construct_sphere(num_cells):
+    num_pts = num_cells
+    indices = np.arange(0, num_pts, dtype=float) + 0.5
+
+    phi = np.arccos(1 - 2*indices/num_pts)
+    theta = math.pi * (1 + 5**0.5) * indices
+
+    x, y, z = np.cos(theta) * np.sin(phi), np.sin(theta) * np.sin(phi), np.cos(phi);
+    locations = np.array(list(zip(x, y, z)))
+    
+    return locations
+
+def construct_circle(num_cells):
+    num_pts = num_cells
+    indices = np.arange(0, num_pts, dtype=float) + 0.5
+
+    r = np.sqrt(indices/num_pts)
+    theta = math.pi * (1 + 5**0.5) * indices
+
+    x =  r*np.cos(theta)
+    y =  r*np.sin(theta)
+    
+    locations = np.array(list(zip(x, y)))
+    return locations
+
+def construct_torus_2d(num_cells, radius=0.5):
+    num_pts = num_cells
+    indices = np.arange(0, num_pts, dtype=float) + 0.5
+
+    r = np.sqrt(indices/num_pts)
+    theta = math.pi * (1 + 5**0.5) * indices
+
+    rs =[]
+    thetas = []
+
+    for ro, to in zip(r, theta):
+        if ro > radius:
+            rs.append(ro)
+            thetas.append(to)
+
+    x =  rs*np.cos(thetas)
+    y =  rs*np.sin(thetas)
+    
+    locations = np.array(list(zip(x, y)))
+    return locations
 
 def construct_target_grid(num_cells):
     """Constructs a rectangular grid. First a grid resolution is randomly

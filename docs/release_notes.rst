@@ -2,6 +2,11 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.4.1 :small:`24 August 2020`
+---------------------------------------
+Changed the package structure and run flow of the scripts. Added anndata and scanpy support. Updated tutorials and implemented
+basic target geometries.
+
 Version 0.3.11 :small:`27 April 2020`
 ---------------------------------------
 Moran's I algorithm for spatially informative genes is implemented and removed pysal dependency.

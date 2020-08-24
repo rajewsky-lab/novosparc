@@ -1,7 +1,3 @@
-###########
-# imports #
-###########
-
 import novosparc
 import time
 import numpy as np
@@ -10,99 +6,66 @@ from scipy.stats import pearsonr
 
 if __name__ == '__main__':
 
-    ###################################
-    # 1. Import and subset the data ###
-    ###################################
-    start_time = time.time()
-    print ('Loading data ... ', end='', flush=True)
 
-    # Read the gene names from the DGE. Assumes that the DGE is formatted
-    # with genes are rows and cells as columns.
-    gene_names = np.genfromtxt('/pathto/dge.txt',
-                               usecols=range(1), dtype='str', skip_header=True)
-    # Read the DGE itself. Read only a maximum number of cells.
-    max_cell_number = 1000
-    dge = np.loadtxt('/pathto/dge.txt',
-                     usecols=range(1, max_cell_number), skiprows=1)
-    
+    ######################################
+    # 1. Set the data and output paths ###
+    ######################################
+
+    dataset_path = '/pathto/dge.txt' # this could be the dge file, or also can be a 10x mtx folder
+    target_space_path = '/pathto/locations.txt' # location coordinates if exist
+    output_folder = '/pathto/output' # folder to save the results, plots etc.
+
+    #######################################
+    # 2. Read the dataset and subsample ###
+    #######################################
+
+    # Read the dge. this assumes the file formatted in a way that genes are columns and cells are rows.
+    # If the data is the other way around, transpose the dataset object (e.g dataset=dataset.T)
+    dataset = novosparc.io.load_data(dataset_path)
+
     # Optional: downsample number of cells.
-    cells_selected, dge = novosparc.pp.subsample_dge(dge, 500, 800)
-    num_cells = dge.shape[0]
-
-    # Optional: Subset to the highly variable genes or other set of genes
-    high_var_genes = np.genfromtxt('/pathto/hvg.txt', dtype='str')
-    dge = dge[np.nonzero(np.in1d(gene_names, high_var_genes))[0], :]
-    dge = dge.T
-    print ('done (', round(time.time()-start_time, 2), 'seconds )')
-
-
-    ################################
-    # 2. Set the target space grid #
-    ################################
-
-    print ('Constructing the target grid ... ', end='', flush=True)
-
-    # Construct a square target grid or read it if available
-    locations = novosparc.rc.construct_target_grid(num_cells)
+    cells_selected, dataset = novosparc.pp.subsample_dataset(dataset, min_num_cells=500, max_num_cells=1000)
     
-    print ('done')
+    # Optional: Subset to the highly variable genes
+    dataset.raw = dataset # this stores the current dataset with all the genes for future use
+    hvg_path = '/pathto/hvg.txt'
 
+    # a file for a list of highly variable genes can be provided. or directly a gene list provided 
+    # with the argument 'gene_list'. The whole process can be done also with scanpy
+    dataset, hvg = novosparc.pp.subset_to_hvg(dataset, hvg_file = hvg_path) 
 
-    ######################################
-    # 3. Setup for the OT reconstruction #
-    ######################################
+    # Load the location coordinates from file if it exists
+    locations = novosparc.io.load_target_space(target_space_path, cells_selected, is_2D=True)
 
-    cost_expression, cost_locations = novosparc.rc.setup_for_OT_reconstruction(dge, locations, 5)
+    # Alternatively, construct a square target grid
+    locations = novosparc.rc.construct_target_grid(num_cells)
 
+    #########################################
+    # 3. Setup and spatial reconstruction ###
+    #########################################
 
-    #############################
-    # 4. Spatial reconstruction #
-    #############################
+    tissue = novosparc.cm.Tissue(dataset=dataset, locations=locations, output_folder=output_folder) # create a tissue object
+    tissue.setup_reconstruction(num_neighbors_s = 5, num_neighbors_t = 5) 
 
-    start_time = time.time()
-    print ('Reconstructing spatial information for',
-           num_cells, 'cells and', locations.shape[0], 'locations ... ')
-
-    # Distributions at target and source spaces. If unkown uniform distributions
-    # should be used.
-    p_locations, p_expression = novosparc.rc.create_space_distributions(len(locations), num_cells)
+    # Optional: use marker genes
+    tissue.setup_reconstruction(markers_to_use=markers_to_use, insitu_matrix=insitu_matrix)
 
     # alpha parameter controls the reconstruction. Set 0 for de novo, between
     # 0 and 1 in case markers are available.
-    alpha_linear = 0
+    tissue.reconstruct(alpha_linear=0) # reconstruct with the given alpha value
 
-    # Compute the mapping probabilities for each cell.
-    gw = gwa.gromov_wasserstein_adjusted_norm(1, cost_expression, cost_locations,
-                                              alpha_linear, p_expression, p_locations,
-                                              'square_loss', epsilon=5e-4, verbose=True)
-    # Compute the sDGE.
-    sdge = np.dot(dge_full.T, gw)
-
-    print (' ... done (', round(time.time()-start_time, 2), 'seconds )')
-
-    
-    #########################################
-    # 5. Write data to disk for further use #
-    #########################################
-
-    start_time = time.time()
-    print ('Writing data to disk ...', end='', flush=True)
-
-    np.savetxt('output/genes.txt', gene_names, fmt='%s')
-    np.savetxt('output/high_var_genes.txt', high_var_genes, fmt='%s')
-    np.savetxt('output/grid_' + shape + '_' + str(num_cells) + '_cells_'
-                   + str(locations.shape[0]) + '_locations.txt', locations, fmt='%.4e')
-    np.savetxt('output/sdge_' + str(num_cells) + '_cells_'
-                   + str(locations.shape[0]) + '_locations.txt', sdge, fmt='%.4e')
-
-    print ('done (', round(time.time()-start_time, 2), 'seconds )')
+    # calculate spatially informative genes after reconstruction
+    tissue.calculate_spatially_informative_genes() 
 
 
-    ###########################
-    # 6. Plot gene expression #
-    ###########################
+    #############################################
+    # 4. Save the results and plot some genes ###
+    #############################################
 
-    gene_list_to_plot = ['gene1', 'gene2']
-    novosparc.pl.plot_gene_patterns(locations, sdge, gene_list_to_plot,
-                                    folder='output/', gene_names=gene_names)
-    
+    # save the sdge to file
+    novosparc.io.write_sdge_to_disk(tissue, output_folder)
+
+    # plot some genes and save them
+    gene_list_to_plot = ['gene1', 'gene2', 'gene3', 'gene4']
+    novosparc.io.save_gene_pattern_plots(tissue=tissue, gene_list_to_plot=gene_list_to_plot, folder=output_folder)
+    novosparc.io.save_spatially_informative_gene_pattern_plots(tissue=tissue, gene_count_to_plot=10, folder=output_folder)

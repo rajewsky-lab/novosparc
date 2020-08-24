@@ -1,133 +1,69 @@
-###########
-# imports #
-###########
-
 import novosparc
 import time
 import numpy as np
 from scipy.spatial.distance import cdist
 from scipy.stats import pearsonr
 import os
+import scanpy as sc
 
 if __name__ == '__main__':
 
-    ###################################
-    # 1. Import and subset the data ###
-    ###################################
-    start_time = time.time()
-    print ('Loading data ... ', end='', flush=True)
+    ######################################
+    # 1. Set the data and output paths ###
+    ######################################
 
-    # Read the BDTNP database
-    gene_names = np.genfromtxt('novosparc/datasets/bdtnp/dge.txt', usecols=range(84),
-                          dtype='str', max_rows=1)
-    dge = np.loadtxt('novosparc/datasets/bdtnp/dge.txt', usecols=range(84), skiprows=1)
-
-    # Optional: downsample number of cells
-    cells_selected, dge = novosparc.pp.subsample_dge(dge, 500, 1000)
-    num_cells = dge.shape[0]
-    
-    # Choose a number of markers to use for reconstruction
-    num_markers = int(np.random.randint(1, 5, 1))
-    markers_to_use = np.random.choice(dge.shape[1], num_markers, replace=False)
-
-    print ('done (', round(time.time()-start_time, 2), 'seconds )')
-
-    # Choose the output folder and create it if it doesn't exist
+    dataset_path = 'novosparc/datasets/bdtnp/dge.txt.gz'
+    target_space_path = 'novosparc/datasets/bdtnp/geometry.txt'
     dirname = os.path.dirname(__file__)
     output_folder = os.path.join(dirname, 'output_bdtnp')
-    if os.path.exists(output_folder) == False:
-        os.mkdir(output_folder)
 
-    ################################
-    # 2. Set the target space grid #
-    ################################
+    #############################################
+    # 2. Read the dataset and subsample cells ###
+    #############################################
 
-    print ('Reading the target space ... ', end='', flush=True)    
-    # Read and use the bdtnp geometry
-    locations = np.loadtxt('novosparc/datasets/bdtnp/geometry.txt', usecols=range(3), skiprows=1)
-    locations = locations[:, [0, 2]]
-    locations = locations[cells_selected, :] # downsample to the cells selected above
-    num_locations = locations.shape[0]
-    print ('done')
+    # Read the dge as an anndata object.
+    # Refer to https://anndata.readthedocs.io/en/latest/ for details of the datatype
+    dataset = novosparc.io.load_data('novosparc/datasets/bdtnp/dge.txt.gz')
 
-    ######################################
-    # 3. Setup for the OT reconstruction #
-    ######################################
-    
-    cost_expression, cost_locations = novosparc.rc.setup_for_OT_reconstruction(dge[:, np.setdiff1d(np.arange(dge.shape[1]),
-                                                                                                   markers_to_use)],
-                                                                               locations,
-                                                                               num_neighbors_source = 5,
-                                                                               num_neighbors_target = 5)
+    # Subsample the cells
+    cells_selected, dataset = novosparc.pp.subsample_dataset(dataset, 500, 1000)
 
-    cost_marker_genes = cdist(dge[:, markers_to_use]/np.amax(dge[:, markers_to_use]),
-                              dge[:, markers_to_use]/np.amax(dge[:, markers_to_use]))
+    # Load the location coordinates from file
+    locations = novosparc.io.load_target_space(target_space_path, cells_selected, is_2D=True)
 
-    #############################
-    # 4. Spatial reconstruction #
-    #############################
-
-    start_time = time.time()
-    print ('Reconstructing spatial information with', num_markers,
-           'markers:', num_cells, 'cells and',
-           locations.shape[0], 'locations ... ')
-    
-    # Distributions at target and source spaces
-    p_locations, p_expression = novosparc.rc.create_space_distributions(num_locations, num_cells)
-
-    alpha_linear = 0.5
-    gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
-                                              alpha_linear, p_expression, p_locations,
-                                              'square_loss', epsilon=5e-4, verbose=True)
-    sdge = np.dot(dge.T, gw)
-    
-    print (' ... done (', round(time.time()-start_time, 2), 'seconds )')
+    # Choose a number of markers to use for reconstruction
+    num_markers = int(np.random.randint(1, 5, 1))
+    markers_to_use = np.random.choice(len(dataset.var), num_markers, replace=False)
+    insitu_matrix = dataset.X[:, markers_to_use]
 
     #########################################
-    # 5. Write data to disk for further use #
+    # 3. Setup and spatial reconstruction ###
     #########################################
 
-    novosparc.rc.write_sdge_to_disk(sdge, num_cells, num_locations, output_folder)
-    ###########################
-    # 6. Plot gene expression #
-    ###########################
+    tissue = novosparc.cm.Tissue(dataset=dataset, locations=locations, output_folder=output_folder) # create a tissue object
+    tissue.setup_reconstruction(markers_to_use=markers_to_use, insitu_matrix=insitu_matrix) # setup construction (optional: using markers)
+    tissue.reconstruct(alpha_linear=0.5) # reconstruct with the given alpha value
 
+    tissue.calculate_spatially_informative_genes() # calculate spatially informative genes
+
+    #############################################
+    # 4. Save the results and plot some genes ###
+    #############################################
+
+    # save the sdge to file
+    novosparc.io.write_sdge_to_disk(tissue, output_folder)
+
+    # plot some genes and save them
     gene_list_to_plot = ['ftz', 'Kr', 'sna', 'zen2']
-    novosparc.pl.plot_gene_patterns(locations, sdge, gene_list_to_plot,
-                                    folder=output_folder,
-                                    gene_names=gene_names, num_cells=num_cells)
+    novosparc.io.save_gene_pattern_plots(tissue=tissue, gene_list_to_plot=gene_list_to_plot, folder=output_folder)
+    novosparc.io.save_spatially_informative_gene_pattern_plots(tissue=tissue, gene_count_to_plot=10, folder=output_folder)
 
     ###################################
-    # 7. Correlate results with BDTNP #
+    # 5. Correlate results with BDTNP #
     ###################################
-    
+
     with open(os.path.join(output_folder, 'results.txt'), 'a') as f:
-        f.write('number_cells,,number_markers,' +  ','.join(gene_names) + '\n')
-        f.write(str(num_cells) + ',' + str(num_markers) + ',')
-        for i in range(len(gene_names)):
-            f.write(str(round(pearsonr(sdge[i, :], dge[:, i])[0], 2)) + ',')
-
-    ############################################
-    # 8. Calculate spatially informative genes #
-    ############################################
-    important_gene_names = novosparc.analysis.morans(sdge, gene_names, locations, folder=output_folder, selected_genes=gene_names[:30])
-    novosparc.pl.plot_gene_patterns(locations, sdge, important_gene_names,
-                                    folder=output_folder,
-                                    gene_names=gene_names, num_cells=num_cells, prefix='_spatially_important_')
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
+        f.write('number_cells,,number_markers,' + ','.join(tissue.gene_names) + '\n')
+        f.write(str(tissue.num_cells) + ',' + str(num_markers) + ',')
+        for i in range(len(tissue.gene_names)):
+            f.write(str(round(pearsonr(tissue.sdge[i, :], tissue.dge[:, i])[0], 2)) + ',')

@@ -8,10 +8,12 @@ __email__ = ', '.join([
     'mornitzan@fas.harvard.edu',
     'enes.senel@mdc-berlin.de'
 ])
-__version__ = '0.3.11'
+__version__ = '0.4.1'
 
 from . import plotting as pl
 from . import preprocessing as pp
 from . import reconstruction as rc
 from . import geometry
 from . import analysis
+from . import common as cm
+from . import io as io
