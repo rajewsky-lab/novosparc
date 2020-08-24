@@ -25,6 +25,7 @@ class Tissue():
 			os.mkdir(output_folder)
 		self.output_folder = output_folder
 
+		self.num_markers = 0
 		self.costs = None
 		self.gw = None
 		self.sdge = None
@@ -48,6 +49,7 @@ class Tissue():
 			cost_marker_genes = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
 							  insitu_matrix/np.amax(insitu_matrix))
 			dge = self.dge[:, np.setdiff1d(np.arange(self.dge.shape[1]), markers_to_use)]
+			self.num_markers = len(markers_to_use)
 
 		# calculate cost matrices for OT
 		cost_expression, cost_locations = novosparc.rc.setup_for_OT_reconstruction(dge,
@@ -62,6 +64,9 @@ class Tissue():
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
 		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
 		"""
+		print ('Reconstructing spatial information with', self.num_markers,
+           'markers:', self.num_cells, 'cells and',
+           self.num_locations, 'locations ... ')
 
 		# Distributions at target and source spaces
 		p_locations, p_expression = novosparc.rc.create_space_distributions(self.num_locations, self.num_cells)
