@@ -35,7 +35,7 @@ if __name__ == '__main__':
     dataset, hvg = novosparc.pp.subset_to_hvg(dataset, hvg_file = hvg_path) 
 
     # Load the location coordinates from file if it exists
-    locations = novosparc.io.load_target_space(target_space_path, cells_selected, is_2D=True)
+    locations = novosparc.io.load_target_space(target_space_path, cells_selected, coords_cols=['xcoord', 'ycoord'])
 
     # Alternatively, construct a square target grid
     locations = novosparc.rc.construct_target_grid(num_cells)

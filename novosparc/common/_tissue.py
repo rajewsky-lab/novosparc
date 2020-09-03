@@ -26,47 +26,66 @@ class Tissue():
 		self.output_folder = output_folder
 
 		self.num_markers = 0
-		self.costs = None
+		self.costs = {'expression': np.ones((self.num_cells, self.num_cells)),
+					  'locations': np.ones((self.num_locations, self.num_locations)),
+					  'markers': np.ones((self.num_cells, self.num_locations))}
 		self.gw = None
 		self.sdge = None
 		self.spatially_informative_genes = None
 
-	def setup_reconstruction(self, markers_to_use=None, insitu_matrix=None, num_neighbors_s=5, num_neighbors_t=5):
-		"""Setup cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
-		can be used as well.
-		markers_to_use -- indices of the marker genes
-		insitu_matrix -- reference atlas
-		num_neighbors_s -- number of neighbors of the source for OT setup
-		num_neighbors_t -- number of neighbors of the target for OT setup
+	def setup_smooth_costs(self, dge_rep=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
 		"""
-
-		# if there are no markers, keep the dge as it is and set ones as the marker costs
-		if markers_to_use is None:
-			cost_marker_genes = np.ones((self.num_cells, self.num_locations))
-			dge = self.dge
-		# if there are marker genes, calculate the cost
-		else:
-			cost_marker_genes = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
-							  insitu_matrix/np.amax(insitu_matrix))
-			dge = self.dge[:, np.setdiff1d(np.arange(self.dge.shape[1]), markers_to_use)]
-			self.num_markers = len(markers_to_use)
-
-		# calculate cost matrices for OT
-		cost_expression, cost_locations = novosparc.rc.setup_for_OT_reconstruction(dge,
+		Set cell-cell expression cost and location-location physical distance cost
+		dge_rep -- some representation of the expression matrix, e.g. pca, selected highly variable genes etc.
+		num_neighbors_s -- num neighbors for cell-cell expression cost
+		num_neighbors_t -- num neighbors for location-location physical distance cost
+		"""
+		dge_rep = dge_rep if dge_rep is not None else self.dge
+		self.costs['expression'], self.costs['locations'] = novosparc.rc.setup_for_OT_reconstruction(dge_rep,
 																			   self.locations,
 																			   num_neighbors_source = num_neighbors_s,
-																			   num_neighbors_target = num_neighbors_t)
+																			   num_neighbors_target = num_neighbors_t,
+																			  verbose=verbose)
 
-		costs = {'expression':cost_expression,'locations': cost_locations,'markers': cost_marker_genes}
-		self.costs = costs
+	def setup_linear_cost(self, markers_to_use, insitu_matrix):
+		"""
+		Set linear(=atlas) cost matrix
+		markers_to_use -- indices of the marker genes
+		insitu_matrix -- corresponding reference atlas
+		"""
+		self.costs['markers'] = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
+						  insitu_matrix/np.amax(insitu_matrix))
+		self.num_markers = len(markers_to_use)
 
-	def reconstruct(self, alpha_linear, epsilon=5e-4):
+
+
+	def setup_reconstruction(self, markers_to_use=None, insitu_matrix=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
+		"""
+		Set cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
+		can be used as well.
+		markers_to_use -- indices of the marker genes
+		insitu_matrix -- reference atlas corresponding to markers_to_use
+		num_neighbors_s -- num neighbors for cell-cell expression cost
+		num_neighbors_t -- num neighbors for location-location physical distance cost
+		"""
+		if markers_to_use is not None:
+			self.setup_linear_cost(markers_to_use, insitu_matrix)
+
+		# calculate cost matrices for OT
+		if self.costs['expression'] is None or self.costs['locations'] is None:
+			self.setup_smooth_costs(num_neighbors_s=num_neighbors_s,
+									num_neighbors_t=num_neighbors_t,
+									verbose=verbose)
+
+
+	def reconstruct(self, alpha_linear, epsilon=5e-4, verbose=True, **kwargs):
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
 		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
 		"""
-		print ('Reconstructing spatial information with', self.num_markers,
-           'markers:', self.num_cells, 'cells and',
-           self.num_locations, 'locations ... ')
+		if verbose:
+			print ('Reconstructing spatial information with', self.num_markers,
+			   'markers:', self.num_cells, 'cells and',
+			   self.num_locations, 'locations ... ')
 
 		# Distributions at target and source spaces
 		p_locations, p_expression = novosparc.rc.create_space_distributions(self.num_locations, self.num_cells)
@@ -77,19 +96,24 @@ class Tissue():
 
 		gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
 												  alpha_linear, p_expression, p_locations,
-												  'square_loss', epsilon=epsilon, verbose=True)
+												  'square_loss', epsilon=epsilon, verbose=verbose, **kwargs)
 		sdge = np.dot(self.dge.T, gw)
 		self.gw = gw
 		self.sdge = sdge
 
 	def calculate_sdge_for_all_genes(self):
+		"""
+		Computes expression of all genes over the locations based on computed mapping of cells to locations
+		:return: expression over locations for genes in dataset (genes x locations)
+		"""
 		raw_data = self.dataset.raw.to_adata()
 		dge_full = raw_data.X
 		sdge_full = np.dot(dge_full.T, self.gw)
 		return sdge_full
 
 	def calculate_spatially_informative_genes(self, selected_genes=None):
-		"""Calculate spatially informative genes using Moran's I
+		"""
+		Calculate spatially informative genes using Moran's I
 		selected_genes -- subset of genes to check. if None, calculate for every gene
 		"""
 		if selected_genes == None:

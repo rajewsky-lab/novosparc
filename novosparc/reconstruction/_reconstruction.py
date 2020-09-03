@@ -20,9 +20,10 @@ import os
 # functions #
 #############
 
-def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_neighbors_target = 5):
+def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_neighbors_target = 5, verbose=True):
     start_time = time.time()
-    print ('Setting up for reconstruction ... ', end='', flush=True)
+    if verbose:
+        print ('Setting up for reconstruction ... ', end='', flush=True)
 
     # Shortest paths matrices at target and source spaces
     num_neighbors_target = num_neighbors_target # number of neighbors for nearest neighbors graph at target
@@ -43,7 +44,8 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_ne
     cost_expression = sp_expression / sp_expression.max()
     cost_expression -= np.mean(cost_expression)
 
-    print ('done (', round(time.time()-start_time, 2), 'seconds )')
+    if verbose:
+        print ('done (', round(time.time()-start_time, 2), 'seconds )')
     return cost_expression, cost_locations
 
     
