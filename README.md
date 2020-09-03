@@ -1,1 +1,0 @@
-# novoSpaRc_protocol

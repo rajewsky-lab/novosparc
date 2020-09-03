@@ -1,0 +1,17 @@
+novoSpaRc has been successfully tested in the following environments:
+
+Ubuntu 16.04 with Python 3.5
+-- matplotlib v2.2.2 
+-- numpy v1.14.2
+-- sklearn v0.19.1
+-- scipy v1.0.0
+-- ot v0.4.0
+-- networkx v2.0
+
+Mac OS X 10.7 with Python 3.6
+-- matplotlib v3.0.2
+-- numpy v1.14.2
+-- sklearn v0.19.1
+-- scipy v1.1.0
+-- ot v0.4.0
+-- networkx v2.0
