@@ -12,8 +12,8 @@ import random
 # functions #
 #############
 
-def construct_torus(num_cells):
-    num_pts = num_cells
+def construct_torus(num_locations):
+    num_pts = num_locations
     indices = np.arange(0, int(np.sqrt(num_pts)), dtype=float) + 0.5
 
     angle = np.linspace(0, 2 * np.pi, int(np.sqrt(num_pts)))
@@ -28,8 +28,8 @@ def construct_torus(num_cells):
     
     return locations
 
-def construct_sphere(num_cells):
-    num_pts = num_cells
+def construct_sphere(num_locations):
+    num_pts = num_locations
     indices = np.arange(0, num_pts, dtype=float) + 0.5
 
     phi = np.arccos(1 - 2*indices/num_pts)
@@ -40,8 +40,8 @@ def construct_sphere(num_cells):
     
     return locations
 
-def construct_circle(num_cells):
-    num_pts = num_cells
+def construct_circle(num_locations):
+    num_pts = num_locations
     indices = np.arange(0, num_pts, dtype=float) + 0.5
 
     r = np.sqrt(indices/num_pts)
@@ -53,8 +53,8 @@ def construct_circle(num_cells):
     locations = np.array(list(zip(x, y)))
     return locations
 
-def construct_torus_2d(num_cells, radius=0.5):
-    num_pts = num_cells
+def construct_torus_2d(num_locations, radius=0.5):
+    num_pts = num_locations
     indices = np.arange(0, num_pts, dtype=float) + 0.5
 
     r = np.sqrt(indices/num_pts)
@@ -74,16 +74,16 @@ def construct_torus_2d(num_cells, radius=0.5):
     locations = np.array(list(zip(x, y)))
     return locations
 
-def construct_target_grid(num_cells):
+def construct_target_grid(num_locations):
     """Constructs a rectangular grid. First a grid resolution is randomly
     chosen. grid_resolution equal to 1 implies equal number of cells and
     locations on the grid. The random parameter beta controls how rectangular
     the grid will be -- beta=1 constructs a square rectangle.
-    num_cells -- the number of cells in the single-cell data."""
+    num_locations -- the number of cells in the single-cell data."""
 
-    grid_resolution = int(np.random.randint(1, 2+(num_cells/1000), 1))
+    grid_resolution = int(np.random.randint(1, 2+(num_locations/1000), 1))
     grid_resolution = 2
-    num_locations = len(range(0, num_cells, grid_resolution))
+    num_locations = len(range(0, num_locations, grid_resolution))
     grid_dim = int(np.ceil(np.sqrt(num_locations)))
 
     beta = round(np.random.uniform(1, 1.5), 1) # controls how rectangular the grid is
@@ -93,6 +93,9 @@ def construct_target_grid(num_cells):
     locations = np.array([(i, j) for i in x for j in y])
 
     return locations
+
+def construct_line(num_locations):
+    return np.vstack((range(num_locations), np.ones(num_locations))).T
 
 def create_target_space_from_image(image):
     """Create a tissue target space from a given image. The image is assumed to
