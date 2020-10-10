@@ -31,7 +31,7 @@ class Tissue():
 		self.sdge = None
 		self.spatially_informative_genes = None
 
-	def setup_reconstruction(self, markers_to_use=None, insitu_matrix=None, num_neighbors_s=5, num_neighbors_t=5):
+	def setup_reconstruction(self, markers_to_use=None, atlas_matrix=None, num_neighbors_s=5, num_neighbors_t=5):
 		"""Setup cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
 		can be used as well.
 		markers_to_use -- indices of the marker genes
@@ -46,8 +46,8 @@ class Tissue():
 			dge = self.dge
 		# if there are marker genes, calculate the cost
 		else:
-			cost_marker_genes = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
-							  insitu_matrix/np.amax(insitu_matrix))
+			cost_marker_genes = cdist(self.dge[:, markers_to_use] / np.amax(self.dge[:, markers_to_use]),
+                                      atlas_matrix / np.amax(atlas_matrix))
 			dge = self.dge[:, np.setdiff1d(np.arange(self.dge.shape[1]), markers_to_use)]
 			self.num_markers = len(markers_to_use)
 
