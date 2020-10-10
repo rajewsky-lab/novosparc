@@ -8,10 +8,11 @@ class Tissue():
 	"""The class that handles the processes for the tissue reconstruction. It is responsible for keeping
 	the data, creating the reconstruction and saving the results."""
 
-	def __init__(self, dataset, locations, output_folder=None):
+	def __init__(self, dataset, locations, atlas_matrix=None, output_folder=None):
 		"""Initialize the tissue using the dataset and locations.
 		dataset -- Anndata object for the single cell data
 		locations -- target space locations
+		atlas_matrix -- optional atlas matrix
 		output_folder -- folder path to save the plots and data"""
 		self.dataset = dataset
 		self.dge = dataset.X
@@ -19,6 +20,7 @@ class Tissue():
 		self.num_cells = len(dataset.obs)
 		self.num_locations = locations.shape[0]
 		self.gene_names = np.array(dataset.var.index.tolist())
+		self.atlas_matrix = atlas_matrix
 
 		# if the output folder does not exist, create one
 		if output_folder is not None and not os.path.exists(output_folder):
@@ -31,7 +33,7 @@ class Tissue():
 		self.sdge = None
 		self.spatially_informative_genes = None
 
-	def setup_reconstruction(self, markers_to_use=None, atlas_matrix=None, num_neighbors_s=5, num_neighbors_t=5):
+	def setup_reconstruction(self, markers_to_use=None, num_neighbors_s=5, num_neighbors_t=5):
 		"""Setup cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
 		can be used as well.
 		markers_to_use -- indices of the marker genes
@@ -47,7 +49,7 @@ class Tissue():
 		# if there are marker genes, calculate the cost
 		else:
 			cost_marker_genes = cdist(self.dge[:, markers_to_use] / np.amax(self.dge[:, markers_to_use]),
-                                      atlas_matrix / np.amax(atlas_matrix))
+                                      self.atlas_matrix / np.amax(self.atlas_matrix))
 			dge = self.dge[:, np.setdiff1d(np.arange(self.dge.shape[1]), markers_to_use)]
 			self.num_markers = len(markers_to_use)
 

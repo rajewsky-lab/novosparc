@@ -40,8 +40,8 @@ if __name__ == '__main__':
     # 3. Setup and spatial reconstruction ###
     #########################################
 
-    tissue = novosparc.cm.Tissue(dataset=dataset, locations=locations, output_folder=output_folder) # create a tissue object
-    tissue.setup_reconstruction(markers_to_use=markers_to_use, atlas_matrix=atlas_matrix) # setup construction (optional: using markers)
+    tissue = novosparc.cm.Tissue(dataset=dataset, locations=locations, atlas_matrix=atlas_matrix, output_folder=output_folder) # create a tissue object
+    tissue.setup_reconstruction(markers_to_use=markers_to_use) # setup construction (optional: using markers)
     tissue.reconstruct(alpha_linear=0.5) # reconstruct with the given alpha value
 
     tissue.calculate_spatially_informative_genes() # calculate spatially informative genes
