@@ -29,7 +29,7 @@ if __name__ == '__main__':
     cells_selected, dataset = novosparc.pp.subsample_dataset(dataset, 500, 1000)
 
     # Load the location coordinates from file
-    locations = novosparc.io.load_target_space(target_space_path, cells_selected, is_2D=True)
+    locations = novosparc.io.load_target_space(target_space_path, cells_selected, coords_cols=['xcoord', 'zcoord'])
 
     # Choose a number of markers to use for reconstruction
     num_markers = int(np.random.randint(1, 5, 1))

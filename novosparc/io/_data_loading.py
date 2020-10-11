@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 import anndata as ad
 import scanpy as sc
@@ -12,12 +13,17 @@ def load_data(path, dtype='dge'):
     return dataset
 
 
-def load_target_space(path, cells_selected=None, is_2D=True):
-    locations = np.loadtxt(path, skiprows=1)
-    if is_2D:
-        locations = locations[:, [0, 2]]
+def load_target_space(path, cells_selected=None, coords_cols=None):
+    """
+    :param coords_cols: Name of coordinates columns. e.g. ['xcoord', 'ycoord']
+    """
+    locations = pd.read_csv(path, sep='\t')
+    # locations = np.loadtxt(path, skiprows=1)
 
-    if cells_selected is not None:
-        locations = locations[cells_selected, :]
+    if coords_cols:
+        locations = locations[coords_cols]
 
-    return locations
+    if cells_selected:
+        locations = locations.iloc[cells_selected, :]
+
+    return locations.values

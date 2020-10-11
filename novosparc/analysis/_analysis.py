@@ -53,7 +53,7 @@ def pool_wrapper(args):
     I, p_norm = Moran(*args)
     return I, p_norm
 
-def morans(sdge, gene_names, locations, folder, selected_genes=None, num_important_genes=10):
+def morans(sdge, gene_names, locations, folder=None, selected_genes=None, num_important_genes=10):
     """Calculates Moran's I metric to select for spatially informative genes"""
 
     start_time = time.time()
@@ -94,8 +94,10 @@ def morans(sdge, gene_names, locations, folder, selected_genes=None, num_importa
     results = np.column_stack((gene_names, mi, mi_pval))
     print('done (', round(time.time() - start_time, 2), 'seconds )')
 
-    np.savetxt(os.path.join(folder, str(num_genes) + '_genes_'
-                            + str(locations.shape[0]) + '_locations_' + 'morans.txt'), results, delimiter="\t",
-               fmt="%s")
+    if folder is not None:
+        np.savetxt(os.path.join(folder, str(num_genes) + '_genes_'
+                                + str(locations.shape[0]) + '_locations_' + 'morans.txt'), results, delimiter="\t",
+                   fmt="%s")
 
     return important_gene_names
+
