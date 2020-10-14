@@ -4,6 +4,21 @@ import novosparc
 from scipy.spatial.distance import cdist
 
 
+from io import StringIO
+import sys
+
+class Capturing(list):
+    def __enter__(self):
+        self._stdout = sys.stdout
+        sys.stdout = self._stringio = StringIO()
+        return self
+
+    def __exit__(self, *args):
+        self.extend(self._stringio.getvalue().splitlines())
+        del self._stringio  # free up some memory
+        sys.stdout = self._stdout
+
+
 class Tissue():
 	"""The class that handles the processes for the tissue reconstruction. It is responsible for keeping
 	the data, creating the reconstruction and saving the results."""
@@ -94,9 +109,28 @@ class Tissue():
 		cost_expression = self.costs['expression']
 		cost_locations = self.costs['locations']
 
-		gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
-												  alpha_linear, p_expression, p_locations,
-												  'square_loss', epsilon=epsilon, verbose=verbose, **kwargs)
+		# get lowest epsilon
+		ini_epsilon = epsilon
+		max_epsilon = 5e-1
+		mult_fac = 10
+		stopped_iter_zero = True
+		warning_msg = 'Warning: numerical errors at iteration '
+		while (epsilon < max_epsilon) and (stopped_iter_zero):
+			print('Trying with epsilon: ' + '{:.2e}'.format(epsilon))
+			with Capturing() as output:
+				gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression,
+																			   cost_locations, alpha_linear,
+																			   p_expression, p_locations,
+																			   'square_loss', epsilon=epsilon,
+																			   verbose=verbose, **kwargs)
+			iter_stop = [int(s.split(warning_msg)[1]) for s in np.unique(output) if warning_msg in s]
+			stopped_iter_zero = (len(output) > 0) and (np.all(np.array(iter_stop) == 0))
+			epsilon = epsilon * mult_fac
+
+		print('\n'.join(output))
+		if epsilon > ini_epsilon:
+			print('Using epsilon: %.08f' % (epsilon / mult_fac))
+
 		sdge = np.dot(self.dge.T, gw)
 		self.gw = gw
 		self.sdge = sdge
@@ -120,6 +154,4 @@ class Tissue():
 			selected_genes = self.gene_names
 		important_gene_names = novosparc.analysis.morans(self.sdge, self.gene_names, self.locations, folder=self.output_folder, selected_genes=selected_genes)
 		self.spatially_informative_genes = important_gene_names
-
-
 
