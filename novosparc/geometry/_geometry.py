@@ -12,8 +12,11 @@ import random
 # functions #
 #############
 
-def construct_torus(num_cells):
-    num_pts = num_cells
+def construct_torus(num_locations):
+    num_pts = num_locations
+    indices = np.arange(0, int(np.sqrt(num_pts)), dtype=float) + 0.5
+
+    angle = np.linspace(0, 2 * np.pi, int(np.sqrt(num_pts)))
     indices = np.arange(0, int(np.sqrt(num_pts)), dtype=float) + 0.5
 
     angle = np.linspace(0, 2 * np.pi, int(np.sqrt(num_pts)))
@@ -28,8 +31,11 @@ def construct_torus(num_cells):
     
     return locations
 
-def construct_sphere(num_cells):
-    num_pts = num_cells
+def construct_sphere(num_locations):
+    num_pts = num_locations
+    indices = np.arange(0, num_pts, dtype=float) + 0.5
+
+    phi = np.arccos(1 - 2*indices/num_pts)
     indices = np.arange(0, num_pts, dtype=float) + 0.5
 
     phi = np.arccos(1 - 2*indices/num_pts)
@@ -40,27 +46,34 @@ def construct_sphere(num_cells):
     
     return locations
 
-def construct_circle(num_cells):
-    num_pts = num_cells
-    indices = np.arange(0, num_pts, dtype=float) + 0.5
+def construct_circle(num_locations, random=False):
+    num_pts = num_locations
 
-    r = np.sqrt(indices/num_pts)
-    theta = math.pi * (1 + 5**0.5) * indices
+    if random:
+        theta = np.linspace(0, 2 * np.pi, num_pts)
+        r = np.random.rand((num_pts))
+    else:
+        indices = np.arange(0, num_pts, dtype=float) + 0.5
+        r = np.sqrt(indices / num_pts)
+        theta = math.pi * (1 + 5 ** 0.5) * indices
 
-    x =  r*np.cos(theta)
-    y =  r*np.sin(theta)
-    
+    x = r * np.cos(theta)
+    y = r * np.sin(theta)
+
     locations = np.array(list(zip(x, y)))
     return locations
 
-def construct_torus_2d(num_cells, radius=0.5):
-    num_pts = num_cells
+def construct_torus_2d(num_locations, radius=0.5, random=False):
+    num_pts = num_locations
     indices = np.arange(0, num_pts, dtype=float) + 0.5
 
-    r = np.sqrt(indices/num_pts)
-    theta = math.pi * (1 + 5**0.5) * indices
+    if random:
+        r = np.random.rand((num_pts))
+    else:
+        r = np.sqrt(indices / num_pts)
+    theta = math.pi * (1 + 5 ** 0.5) * indices
 
-    rs =[]
+    rs = []
     thetas = []
 
     for ro, to in zip(r, theta):
@@ -68,31 +81,30 @@ def construct_torus_2d(num_cells, radius=0.5):
             rs.append(ro)
             thetas.append(to)
 
-    x =  rs*np.cos(thetas)
-    y =  rs*np.sin(thetas)
-    
+    x = rs * np.cos(thetas)
+    y = rs * np.sin(thetas)
+
     locations = np.array(list(zip(x, y)))
     return locations
 
-def construct_target_grid(num_cells):
-    """Constructs a rectangular grid. First a grid resolution is randomly
-    chosen. grid_resolution equal to 1 implies equal number of cells and
-    locations on the grid. The random parameter beta controls how rectangular
-    the grid will be -- beta=1 constructs a square rectangle.
-    num_cells -- the number of cells in the single-cell data."""
+def construct_target_grid(num_locations, ratio=1.2, random=False):
+    grid_dim = int(np.ceil(np.sqrt(num_locations / ratio)))
 
-    grid_resolution = int(np.random.randint(1, 2+(num_cells/1000), 1))
-    grid_resolution = 2
-    num_locations = len(range(0, num_cells, grid_resolution))
-    grid_dim = int(np.ceil(np.sqrt(num_locations)))
-
-    beta = round(np.random.uniform(1, 1.5), 1) # controls how rectangular the grid is
-    # beta = 1 # set this for a square grid
-    x = np.arange(grid_dim * beta)
-    y = np.arange(grid_dim / beta)
-    locations = np.array([(i, j) for i in x for j in y])
+    if random:
+        grid_dim = int(np.ceil(np.sqrt(num_locations * 2 / ratio)))
+        x = np.arange(grid_dim * ratio)
+        y = np.arange(grid_dim)
+        locations = np.array([(i, j) for i in x for j in y])
+        locations = locations[np.random.choice(np.arange(len(locations)), num_locations, replace=False)]
+    else:
+        x = np.arange(grid_dim * ratio)
+        y = np.arange(grid_dim)
+        locations = np.array([(i, j) for i in x for j in y])
 
     return locations
+
+def construct_line(num_locations):
+    return np.vstack((range(num_locations), np.ones(num_locations))).T
 
 def create_target_space_from_image(image):
     """Create a tissue target space from a given image. The image is assumed to

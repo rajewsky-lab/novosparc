@@ -14,11 +14,6 @@ def load_data(path, dtype='dge'):
 
 
 def load_target_space(path, cells_selected=None, coords_cols=None):
-    """
-    :param coords_cols: Name of coordinates columns. e.g. ['xcoord', 'ycoord']
-    """
-    locations = pd.read_csv(path, sep='\t')
-    # locations = np.loadtxt(path, skiprows=1)
 
     if coords_cols:
         locations = locations[coords_cols]

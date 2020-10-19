@@ -27,6 +27,7 @@ class Tissue():
 		"""Initialize the tissue using the dataset and locations.
 		dataset -- Anndata object for the single cell data
 		locations -- target space locations
+		atlas_matrix -- optional atlas matrix
 		output_folder -- folder path to save the plots and data"""
 		self.dataset = dataset
 		self.dge = dataset.X
@@ -34,6 +35,7 @@ class Tissue():
 		self.num_cells = len(dataset.obs)
 		self.num_locations = locations.shape[0]
 		self.gene_names = np.array(dataset.var.index.tolist())
+		self.atlas_matrix = atlas_matrix
 
 		# if the output folder does not exist, create one
 		if output_folder is not None and not os.path.exists(output_folder):
@@ -136,10 +138,6 @@ class Tissue():
 		self.sdge = sdge
 
 	def calculate_sdge_for_all_genes(self):
-		"""
-		Computes expression of all genes over the locations based on computed mapping of cells to locations
-		:return: expression over locations for genes in dataset (genes x locations)
-		"""
 		raw_data = self.dataset.raw.to_adata()
 		dge_full = raw_data.X
 		sdge_full = np.dot(dge_full.T, self.gw)
@@ -154,4 +152,3 @@ class Tissue():
 			selected_genes = self.gene_names
 		important_gene_names = novosparc.analysis.morans(self.sdge, self.gene_names, self.locations, folder=self.output_folder, selected_genes=selected_genes)
 		self.spatially_informative_genes = important_gene_names
-

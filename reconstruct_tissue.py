@@ -48,7 +48,7 @@ if __name__ == '__main__':
     tissue.setup_reconstruction(num_neighbors_s = 5, num_neighbors_t = 5) 
 
     # Optional: use marker genes
-    tissue.setup_reconstruction(markers_to_use=markers_to_use, insitu_matrix=insitu_matrix)
+    tissue.setup_reconstruction(markers_to_use=markers_to_use, atlas_matrix=atlas_matrix)
 
     # alpha parameter controls the reconstruction. Set 0 for de novo, between
     # 0 and 1 in case markers are available.
