@@ -1,1 +1,1 @@
-from ._analysis import morans, get_moran_pvals
+from ._analysis import get_moran_pvals

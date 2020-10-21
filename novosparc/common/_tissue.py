@@ -2,28 +2,16 @@ import numpy as np
 import os
 import novosparc
 from scipy.spatial.distance import cdist
-
-
-from io import StringIO
-import sys
-
-class Capturing(list):
-    def __enter__(self):
-        self._stdout = sys.stdout
-        sys.stdout = self._stringio = StringIO()
-        return self
-
-    def __exit__(self, *args):
-        self.extend(self._stringio.getvalue().splitlines())
-        del self._stringio  # free up some memory
-        sys.stdout = self._stdout
-
+from contextlib import redirect_stdout
+import io
+import pandas as pd
+import operator
 
 class Tissue():
 	"""The class that handles the processes for the tissue reconstruction. It is responsible for keeping
 	the data, creating the reconstruction and saving the results."""
 
-	def __init__(self, dataset, locations, output_folder=None):
+	def __init__(self, dataset, locations, atlas_matrix=None, output_folder=None):
 		"""Initialize the tissue using the dataset and locations.
 		dataset -- Anndata object for the single cell data
 		locations -- target space locations
@@ -43,12 +31,14 @@ class Tissue():
 		self.output_folder = output_folder
 
 		self.num_markers = 0
-		self.costs = {'expression': np.ones((self.num_cells, self.num_cells)),
-					  'locations': np.ones((self.num_locations, self.num_locations)),
-					  'markers': np.ones((self.num_cells, self.num_locations))}
+		self.costs = None
 		self.gw = None
 		self.sdge = None
 		self.spatially_informative_genes = None
+		self.costs = {'expression': np.ones((self.num_cells, self.num_cells)),
+					  'locations': np.ones((self.num_locations, self.num_locations)),
+					  'markers': np.ones((self.num_cells, self.num_locations))}
+
 
 	def setup_smooth_costs(self, dge_rep=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
 		"""
@@ -64,38 +54,34 @@ class Tissue():
 																			   num_neighbors_target = num_neighbors_t,
 																			  verbose=verbose)
 
-	def setup_linear_cost(self, markers_to_use, insitu_matrix):
+	def setup_linear_cost(self, markers_to_use, atlas_matrix):
 		"""
 		Set linear(=atlas) cost matrix
 		markers_to_use -- indices of the marker genes
-		insitu_matrix -- corresponding reference atlas
+		atlas_matrix -- corresponding reference atlas
 		"""
 		self.costs['markers'] = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
-						  insitu_matrix/np.amax(insitu_matrix))
+						  atlas_matrix/np.amax(atlas_matrix))
 		self.num_markers = len(markers_to_use)
 
-
-
-	def setup_reconstruction(self, markers_to_use=None, insitu_matrix=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
+	def setup_reconstruction(self, markers_to_use=None, atlas_matrix=None, num_neighbors_s=5, num_neighbors_t=5, verbose=True):
 		"""
 		Set cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
 		can be used as well.
 		markers_to_use -- indices of the marker genes
-		insitu_matrix -- reference atlas corresponding to markers_to_use
+		atlas_matrix -- reference atlas corresponding to markers_to_use
 		num_neighbors_s -- num neighbors for cell-cell expression cost
 		num_neighbors_t -- num neighbors for location-location physical distance cost
 		"""
 		if markers_to_use is not None:
-			self.setup_linear_cost(markers_to_use, insitu_matrix)
+			self.setup_linear_cost(markers_to_use, atlas_matrix)
 
 		# calculate cost matrices for OT
-		if self.costs['expression'] is None or self.costs['locations'] is None:
-			self.setup_smooth_costs(num_neighbors_s=num_neighbors_s,
+		self.setup_smooth_costs(num_neighbors_s=num_neighbors_s,
 									num_neighbors_t=num_neighbors_t,
 									verbose=verbose)
 
-
-	def reconstruct(self, alpha_linear, epsilon=5e-4, verbose=True, **kwargs):
+	def reconstruct(self, alpha_linear, epsilon=5e-4, search_epsilon=True, verbose=True, **kwargs):
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
 		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
 		"""
@@ -111,27 +97,30 @@ class Tissue():
 		cost_expression = self.costs['expression']
 		cost_locations = self.costs['locations']
 
-		# get lowest epsilon
-		ini_epsilon = epsilon
-		max_epsilon = 5e-1
-		mult_fac = 10
-		stopped_iter_zero = True
-		warning_msg = 'Warning: numerical errors at iteration '
-		while (epsilon < max_epsilon) and (stopped_iter_zero):
-			print('Trying with epsilon: ' + '{:.2e}'.format(epsilon))
-			with Capturing() as output:
-				gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression,
-																			   cost_locations, alpha_linear,
-																			   p_expression, p_locations,
-																			   'square_loss', epsilon=epsilon,
-																			   verbose=verbose, **kwargs)
-			iter_stop = [int(s.split(warning_msg)[1]) for s in np.unique(output) if warning_msg in s]
-			stopped_iter_zero = (len(output) > 0) and (np.all(np.array(iter_stop) == 0))
-			epsilon = epsilon * mult_fac
+		if search_epsilon:
+			ini_epsilon = epsilon
+			max_epsilon = 5e-1
+			mult_fac = 10
+			stopped_iter_zero = True
+			warning_msg = 'Warning: numerical errors at iteration '
+			while (epsilon < max_epsilon):
+				f = io.StringIO()
 
-		print('\n'.join(output))
-		if epsilon > ini_epsilon:
-			print('Using epsilon: %.08f' % (epsilon / mult_fac))
+				print('Trying with epsilon: ' + '{:.2e}'.format(epsilon))
+				with redirect_stdout(f):
+					gw = novosparc.rc._GWadjusted.gromov_wasserstein_adjusted_norm(cost_marker_genes, cost_expression, cost_locations,
+													  alpha_linear, p_expression, p_locations,
+													  'square_loss', epsilon=epsilon, verbose=True)
+				out = f.getvalue()
+
+				if warning_msg not in out:
+					f.close()
+					break
+				else:
+					epsilon = epsilon * mult_fac
+					f.close()
+			if epsilon > ini_epsilon:
+				print('Using epsilon: %.08f' % (epsilon / mult_fac))
 
 		sdge = np.dot(self.dge.T, gw)
 		self.gw = gw
@@ -144,11 +133,25 @@ class Tissue():
 		return sdge_full
 
 	def calculate_spatially_informative_genes(self, selected_genes=None):
-		"""
-		Calculate spatially informative genes using Moran's I
+		"""Calculate spatially informative genes using Moran's I
 		selected_genes -- subset of genes to check. if None, calculate for every gene
 		"""
-		if selected_genes == None:
-			selected_genes = self.gene_names
-		important_gene_names = novosparc.analysis.morans(self.sdge, self.gene_names, self.locations, folder=self.output_folder, selected_genes=selected_genes)
-		self.spatially_informative_genes = important_gene_names
+		if selected_genes is not None:
+			selected_genes = np.asarray(selected_genes)
+			gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
+			sdge = self.sdge[gene_indices, :]
+			gene_names = selected_genes
+		else:
+			sdge = self.sdge
+
+		num_genes = sdge.shape[0]
+		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
+		dataset = pd.DataFrame(sdge.T)
+		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=8)
+		mI = np.array(mI)
+		mI[np.isnan(mI)] = -np.inf
+		important_gene_ids = np.argsort(mI)[::-1]
+		important_gene_names = gene_names[important_gene_ids]
+		results = pd.DataFrame({'genes': gene_names, 'mI':mI, 'pval':pvals})
+		results = results.sort_values(by=['mI'], ascending=False)
+		self.spatially_informative_genes = results
