@@ -43,7 +43,7 @@ class Tissue():
 		self.num_markers = 0
 		self.costs = {'expression': np.ones((self.num_cells, self.num_cells)),
 					  'locations': np.ones((self.num_locations, self.num_locations)),
-					  'markers': np.ones((self.num_cells, self.num_locations))}
+					  'markers': 1}
 		self.gw = None
 		self.sdge = None
 		self.spatially_informative_genes = None
@@ -124,7 +124,7 @@ class Tissue():
 																			   'square_loss', epsilon=epsilon,
 																			   verbose=verbose, **kwargs)
 			iter_stop = [int(s.split(warning_msg)[1]) for s in np.unique(output) if warning_msg in s]
-			stopped_iter_zero = (len(output) > 0) and (np.all(np.array(iter_stop) == 0))
+			stopped_iter_zero = (len(iter_stop) > 0) and (np.all(np.array(iter_stop) == 0))
 			epsilon = epsilon * mult_fac
 
 		print('\n'.join(output))
@@ -155,3 +155,48 @@ class Tissue():
 		important_gene_names = novosparc.analysis.morans(self.sdge, self.gene_names, self.locations, folder=self.output_folder, selected_genes=selected_genes)
 		self.spatially_informative_genes = important_gene_names
 
+
+def test_tissue():
+	import matplotlib
+
+	import matplotlib.pyplot as plt
+	import numpy as np
+	import scanpy as sc
+	from scipy.spatial.distance import pdist, squareform
+
+	matplotlib.use('MacOSX')
+	ncells = 100
+	nlocs = 100
+	ngenes = 1000
+	X = np.random.random((ncells, ngenes))
+	adata = sc.AnnData(X)
+	locs = np.arange(nlocs).reshape((nlocs, 1))
+
+	# # reconstruct using random cell-cell distances
+	# tissue.setup_reconstruction()
+	# tissue.reconstruct(alpha_linear=0)
+	# plt.imshow(tissue.gw)
+	# plt.show()
+
+	# switching cell-cell and loc-loc distances to correspond
+	exp = np.arange(ncells).reshape((ncells, 1))
+	tissue = novosparc.cm.Tissue(dataset=sc.AnnData(exp), locations=locs)
+	tissue.setup_smooth_costs(num_neighbors_s=5, num_neighbors_t=5)
+	# tissue.costs['locations'] = squareform(pdist(locs))
+	# tissue.costs['expression'] = squareform(pdist(exp))
+	plt.subplot(1,2,1)
+	plt.imshow(tissue.costs['expression'])
+	plt.subplot(1,2,2)
+	plt.imshow(tissue.costs['locations'])
+	plt.show()
+	tissue.reconstruct(alpha_linear=0, epsilon=5e-3)
+
+	plt.subplot(1,2,1)
+	plt.imshow(exp)
+	plt.subplot(1,2,2)
+	plt.imshow(tissue.sdge.T)
+
+	plt.show()
+
+if __name__ == '__main__':
+    test_tissue()

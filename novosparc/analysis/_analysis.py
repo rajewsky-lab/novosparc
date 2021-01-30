@@ -171,9 +171,9 @@ def get_moran_pvals(xy, X, radius=None, verbose=False, npermut=100, n_neighbors=
 
     for i in np.arange(npermut):
         pidx = np.random.permutation(idx)
-        pI[i, :] = morans(xy, X[pidx, :], W=W).reshape((1, -1))
+        pI[i, :] = get_morans(xy, X[pidx, :], W=W).reshape((1, -1))
 
-    I = morans(xy, X, W=W)
+    I = get_morans(xy, X, W=W)
     pvals = np.mean(I <= pI, 0)
 
     return I, pvals
