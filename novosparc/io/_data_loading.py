@@ -14,6 +14,7 @@ def load_data(path, dtype='dge'):
 
 
 def load_target_space(path, cells_selected=None, coords_cols=None):
+    locations = pd.read_csv(path, sep='\t')
 
     if coords_cols:
         locations = locations[coords_cols]
