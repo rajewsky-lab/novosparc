@@ -54,12 +54,13 @@ class Tissue():
 																			   num_neighbors_target = num_neighbors_t,
 																			  verbose=verbose)
 
-	def setup_linear_cost(self, markers_to_use, atlas_matrix):
+	def setup_linear_cost(self, markers_to_use, atlas_matrix=None):
 		"""
 		Set linear(=atlas) cost matrix
 		markers_to_use -- indices of the marker genes
 		atlas_matrix -- corresponding reference atlas
 		"""
+		self.atlas_matrix = atlas_matrix if atlas_matrix is not None else self.atlas_matrix
 		self.costs['markers'] = cdist(self.dge[:, markers_to_use]/np.amax(self.dge[:, markers_to_use]),
 						  atlas_matrix/np.amax(atlas_matrix))
 		self.num_markers = len(markers_to_use)
@@ -73,8 +74,10 @@ class Tissue():
 		num_neighbors_s -- num neighbors for cell-cell expression cost
 		num_neighbors_t -- num neighbors for location-location physical distance cost
 		"""
+		self.atlas_matrix = atlas_matrix if atlas_matrix is not None else self.atlas_matrix
+
 		if markers_to_use is not None:
-			self.setup_linear_cost(markers_to_use, atlas_matrix)
+			self.setup_linear_cost(markers_to_use, self.atlas_matrix)
 
 		# calculate cost matrices for OT
 		self.setup_smooth_costs(num_neighbors_s=num_neighbors_s,
