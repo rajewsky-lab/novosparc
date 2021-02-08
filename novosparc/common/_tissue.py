@@ -84,7 +84,7 @@ class Tissue():
 									num_neighbors_t=num_neighbors_t,
 									verbose=verbose)
 
-	def reconstruct(self, alpha_linear, epsilon=5e-4, search_epsilon=True, verbose=True, **kwargs):
+	def reconstruct(self, alpha_linear, epsilon=5e-4, search_epsilon=True, verbose=True, p_locations=None, p_expression=None):
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
 		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
 		"""
@@ -94,7 +94,9 @@ class Tissue():
 			   self.num_locations, 'locations ... ')
 
 		# Distributions at target and source spaces
-		p_locations, p_expression = novosparc.rc.create_space_distributions(self.num_locations, self.num_cells)
+		p_locations_c, p_expression_c = novosparc.rc.create_space_distributions(self.num_locations, self.num_cells)
+		p_locations = p_locations_c if p_locations is None else p_locations
+		p_expression = p_expression_c if p_expression is None else p_expression
 
 		cost_marker_genes = self.costs['markers']
 		cost_expression = self.costs['expression']
