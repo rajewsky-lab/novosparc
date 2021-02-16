@@ -141,7 +141,7 @@ class Tissue():
 												  self.alpha_linear, self.p_expression, self.p_locations,
 												  'square_loss', epsilon=epsilon, verbose=verbose, random_ini=random_ini)
 			out = f.getvalue()
-			print(out)
+	
 			if warning_msg not in out:
 				f.close()
 				break
