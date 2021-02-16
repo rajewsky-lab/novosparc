@@ -20,21 +20,25 @@ import os
 # functions #
 #############
 
-def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_neighbors_target = 5, verbose=True):
+def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_neighbors_target = 5,
+                                locations_metric='minkowski', locations_metric_p=2,
+                                expression_metric='minkowski', expression_metric_p=2, verbose=True):
     start_time = time.time()
     if verbose:
         print ('Setting up for reconstruction ... ', end='', flush=True)
 
     # Shortest paths matrices at target and source spaces
     num_neighbors_target = num_neighbors_target # number of neighbors for nearest neighbors graph at target
-    A_locations = kneighbors_graph(locations, num_neighbors_target, mode='connectivity', include_self=True)
-    sp_locations = dijkstra(csgraph = csr_matrix(A_locations), directed = False,return_predecessors = False)
+    A_locations = kneighbors_graph(locations, num_neighbors_target, mode='connectivity', include_self=True,
+                                   metric=locations_metric, p=locations_metric_p)
+    sp_locations = dijkstra(csgraph=csr_matrix(A_locations), directed=False, return_predecessors=False)
     sp_locations_max = np.nanmax(sp_locations[sp_locations != np.inf])
     sp_locations[sp_locations > sp_locations_max] = sp_locations_max #set threshold for shortest paths
 
     num_neighbors_source = num_neighbors_source # number of neighbors for nearest neighbors graph at source
-    A_expression = kneighbors_graph(dge, num_neighbors_source, mode='connectivity', include_self=True)
-    sp_expression = dijkstra(csgraph = csr_matrix(A_expression), directed = False, return_predecessors = False) 
+    A_expression = kneighbors_graph(dge, num_neighbors_source, mode='connectivity', include_self=True,
+                                    metric=expression_metric, p=expression_metric_p)
+    sp_expression = dijkstra(csgraph=csr_matrix(A_expression), directed=False, return_predecessors=False)
     sp_expression_max = np.nanmax(sp_expression[sp_expression != np.inf])
     sp_expression[sp_expression > sp_expression_max] = sp_expression_max #set threshold for shortest paths
 
@@ -45,7 +49,7 @@ def setup_for_OT_reconstruction(dge, locations, num_neighbors_source = 5, num_ne
     cost_expression -= np.mean(cost_expression)
 
     if verbose:
-        print ('done (', round(time.time()-start_time, 2), 'seconds )')
+        print('done (', round(time.time()-start_time, 2), 'seconds )')
     return cost_expression, cost_locations
 
     
