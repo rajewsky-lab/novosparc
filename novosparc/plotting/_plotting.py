@@ -8,7 +8,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+import novosparc
 import os
+import copy
 #############
 # functions #
 #############
@@ -181,3 +183,63 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
         plt.tight_layout()
         plt.savefig(os.path.join(folder, 'spatial_archetypes.png'))
     plt.close()
+
+def plot_transport_entropy_dist(tissue):
+    """
+    Plots the distribution of entropy of locations transport values for each cell.
+    Displays histograms for:
+        - OT - the given mapping
+        - Atlas shuffled OT - if an atlas is used, shuffles each gene independently over all locations, and recomputes ot with the same params
+        - Random coupling - projection of a random matrix onto the coupling space (set marginal distributions)
+        - Outer product coupling - entropy for the naive outer product coupling (uniform if marginals are uniform)
+    """
+
+    num_cells, num_locations = tissue.gw.shape
+
+    p = tissue.p_expression
+    q = tissue.p_locations
+    epsilon = tissue.epsilon
+
+    # compute uniform coupling
+    unif_coupling = np.outer(p, q)
+
+    # compute random coupling
+    rand_coupling = novosparc.analysis.compute_random_coupling(p, q, epsilon)
+
+    # if there is an atlas, compute reconstruction with shuffled atlas
+    has_atlas = tissue.atlas_matrix is not None
+    if has_atlas:
+        tissue_shuf = copy.deepcopy(tissue)
+        atlas_matrix_shuf = tissue_shuf.atlas_matrix
+
+        locs_shuf = np.arange(num_locations)
+
+        for g in np.arange(atlas_matrix_shuf.shape[1]):
+            np.random.shuffle(locs_shuf)
+            atlas_matrix_shuf[:, g] = atlas_matrix_shuf[locs_shuf, g]
+
+        tissue_shuf.setup_linear_cost(markers_to_use=tissue_shuf.markers_to_use, atlas_matrix=atlas_matrix_shuf)
+        tissue_shuf.reconstruct(alpha_linear=tissue_shuf.alpha_linear, epsilon=tissue_shuf.epsilon)
+
+    # compute entropies
+    get_cell_entropy = lambda A: (-A * np.log2(A)).sum(axis=1)
+    ent_T = get_cell_entropy(tissue.gw)
+    ent_T_unif = get_cell_entropy(unif_coupling)
+    ent_T_rproj = get_cell_entropy(rand_coupling)
+    ent_T_shuf = get_cell_entropy(tissue_shuf.gw) if has_atlas else None
+
+    # plot entropy distributions
+    min_ent = np.min(ent_T)
+    max_ent = np.min(ent_T_unif) * 1.1
+    bins = np.linspace(min_ent, max_ent, 100)
+    plt.hist(ent_T, bins=bins, label='OT', alpha=0.5)
+    plt.hist(ent_T_rproj, bins=bins, label='Random coupling', alpha=0.5)
+    plt.hist(ent_T_unif, bins=bins, label='Outer product coupling', alpha=0.5)
+    if has_atlas:
+        plt.hist(ent_T_shuf, bins=bins, label='Atlas shuffled OT', alpha=0.5)
+    plt.title('Localization of OT')
+    plt.xlabel('Entropy')
+    plt.legend()
+    plt.show()
+
+    return ent_T, ent_T_unif, ent_T_rproj, ent_T_shuf
