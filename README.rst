@@ -1,9 +1,11 @@
-|PyPI| |Docs|
+|PyPI| |Docs| |PePy|
 
 .. |PyPI| image:: https://img.shields.io/pypi/v/novosparc.svg
    :target: https://pypi.org/project/novosparc/
 .. |Docs| image:: https://readthedocs.org/projects/novosparc/badge/?version=latest
    :target: https://novosparc.readthedocs.io/
+.. |PePy| image:: https://static.pepy.tech/badge/novosparc
+   :target: https://pepy.tech/project/novosparc
 
 novoSpaRc - *de novo* Spatial Reconstruction of Single-Cell Gene Expression
 ===========================================================================
