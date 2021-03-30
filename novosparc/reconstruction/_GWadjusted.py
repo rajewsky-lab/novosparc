@@ -12,6 +12,7 @@ Gromov-Wasserstein transport method
 # License: MIT License
 
 import numpy as np
+import novosparc
 from ot.bregman import sinkhorn
 from ot.utils import dist
 
@@ -73,7 +74,7 @@ def tensor_square_loss_adjusted(C1, C2, T):
 
 
 def gromov_wasserstein_adjusted_norm(cost_mat, C1, C2, alpha_linear,p, q, loss_fun, epsilon,
-                                     max_iter=1000, tol=1e-9, verbose=False, log=False):
+                                     max_iter=1000, tol=1e-9, verbose=False, log=False, random_ini=False):
     """
     Returns the gromov-wasserstein coupling between the two measured similarity matrices
 
@@ -135,7 +136,7 @@ def gromov_wasserstein_adjusted_norm(cost_mat, C1, C2, alpha_linear,p, q, loss_f
     C2 = np.asarray(C2, dtype=np.float64)
     cost_mat = np.asarray(cost_mat, dtype=np.float64)
 
-    T = np.outer(p, q)  # Initialization
+    T = novosparc.analysis.compute_random_coupling(p, q, epsilon) if random_ini else np.outer(p, q)  # Initialization
 
     cpt = 0
     err = 1
