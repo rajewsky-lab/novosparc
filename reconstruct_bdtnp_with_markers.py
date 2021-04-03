@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # 1. Set the data and output paths ###
     ######################################
 
-    dataset_path = 'novosparc/datasets/bdtnp/dge.txt.gz'
+    dataset_path = 'novosparc/datasets/bdtnp/dge.txt'
     target_space_path = 'novosparc/datasets/bdtnp/geometry.txt'
     dirname = os.path.dirname(__file__)
     output_folder = os.path.join(dirname, 'output_bdtnp')
@@ -23,13 +23,13 @@ if __name__ == '__main__':
 
     # Read the dge as an anndata object.
     # Refer to https://anndata.readthedocs.io/en/latest/ for details of the datatype
-    dataset = novosparc.io.load_data('novosparc/datasets/bdtnp/dge.txt.gz')
+    dataset = novosparc.io.load_data(dataset_path)
 
     # Subsample the cells
     cells_selected, dataset = novosparc.pp.subsample_dataset(dataset, 500, 1000)
 
     # Load the location coordinates from file
-    locations = novosparc.io.load_target_space(target_space_path, cells_selected, coords_cols=['xcoord', 'zcoord'])
+    locations = novosparc.io.load_target_space(target_space_path, cells_selected, coords_cols=['xcoord', 'zcoord'], sep=' ')
 
     # Choose a number of markers to use for reconstruction
     num_markers = int(np.random.randint(1, 5, 1))

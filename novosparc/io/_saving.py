@@ -17,7 +17,7 @@ def save_gene_pattern_plots(tissue, gene_list_to_plot,  folder):
                                     gene_names=tissue.gene_names, num_cells=tissue.num_cells)
 
 def save_spatially_informative_gene_pattern_plots(tissue, gene_count_to_plot,  folder):
-    novosparc.pl.plot_gene_patterns(tissue.locations, tissue.sdge, tissue.spatially_informative_genes[:gene_count_to_plot],
+    novosparc.pl.plot_gene_patterns(tissue.locations, tissue.sdge, tissue.spatially_informative_genes[:gene_count_to_plot]['genes'],
                                     folder=folder,
                                     gene_names=tissue.gene_names, num_cells=tissue.num_cells,
                                     prefix='_spatially_important_')
