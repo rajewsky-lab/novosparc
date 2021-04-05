@@ -180,7 +180,8 @@ class Tissue():
 			sdge = self.sdge[gene_indices, :]
 			gene_names = selected_genes
 		else:
-			sdge = self.sdge
+                        gene_names = self.gene_names
+                        sdge = self.sdge
 
 		num_genes = sdge.shape[0]
 		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
@@ -192,4 +193,5 @@ class Tissue():
 		important_gene_names = gene_names[important_gene_ids]
 		results = pd.DataFrame({'genes': gene_names, 'mI': mI, 'pval': pvals})
 		results = results.sort_values(by=['mI'], ascending=False)
+	
 		self.spatially_informative_genes = results

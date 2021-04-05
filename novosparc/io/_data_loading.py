@@ -13,13 +13,13 @@ def load_data(path, dtype='dge'):
     return dataset
 
 
-def load_target_space(path, cells_selected=None, coords_cols=None):
-    locations = pd.read_csv(path, sep='\t')
-
+def load_target_space(path, cells_selected=None, coords_cols=None, sep='\t'):
+    locations = pd.read_csv(path, sep=sep)
+    
     if coords_cols:
         locations = locations[coords_cols]
 
-    if cells_selected:
+    if cells_selected is not None:
         locations = locations.iloc[cells_selected, :]
 
     return locations.values
