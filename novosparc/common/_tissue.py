@@ -141,7 +141,7 @@ class Tissue():
 												  self.alpha_linear, self.p_expression, self.p_locations,
 												  'square_loss', epsilon=epsilon, verbose=verbose, random_ini=random_ini)
 			out = f.getvalue()
-	
+
 			if warning_msg not in out:
 				f.close()
 				break
@@ -169,12 +169,13 @@ class Tissue():
 		sdge_full = np.dot(dge_full.T, self.gw)
 		return sdge_full
 
-	def calculate_spatially_informative_genes(self, selected_genes=None):
+	def calculate_spatially_informative_genes(self, selected_genes=None, n_neighbors=8):
 		"""Calculate spatially informative genes using Moran's I
 		selected_genes -- subset of genes to check. if None, calculate for every gene
 		"""
 		if selected_genes is not None:
 			selected_genes = np.asarray(selected_genes)
+			selected_genes = np.unique(selected_genes)
 			gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
 			sdge = self.sdge[gene_indices, :]
 			gene_names = selected_genes
@@ -184,11 +185,11 @@ class Tissue():
 		num_genes = sdge.shape[0]
 		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
 		dataset = pd.DataFrame(sdge.T)
-		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=8)
+		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=n_neighbors)
 		mI = np.array(mI)
 		mI[np.isnan(mI)] = -np.inf
 		important_gene_ids = np.argsort(mI)[::-1]
 		important_gene_names = gene_names[important_gene_ids]
-		results = pd.DataFrame({'genes': gene_names, 'mI':mI, 'pval':pvals})
+		results = pd.DataFrame({'genes': gene_names, 'mI': mI, 'pval': pvals})
 		results = results.sort_values(by=['mI'], ascending=False)
 		self.spatially_informative_genes = results

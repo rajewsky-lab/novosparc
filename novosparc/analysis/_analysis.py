@@ -57,7 +57,7 @@ def get_moran_pvals(sdge, locations, radius=None, verbose=False, npermut=100, n_
     """
     Calculates the spatial correlation given a threshold radius of neighbors
     """
-    nns = kneighbors_graph(locations, 8, mode='connectivity', include_self=False)
+    nns = kneighbors_graph(locations, n_neighbors, mode='connectivity', include_self=False)
     W = nns.toarray()
     X = sdge
     xy = locations
@@ -112,7 +112,6 @@ def change_matrix_same_sum(T, times=10):
     # print("Column sums squared error: %f " % np.sum(np.square(np.sum(T, axis=0) - q)))
 
     return T
-
 
 def compute_random_coupling(p, q, epsilon):
     """
