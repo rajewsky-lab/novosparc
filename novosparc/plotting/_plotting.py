@@ -8,6 +8,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.cluster import hierarchy
+from textwrap import wrap
 import novosparc
 import os
 import copy
@@ -38,7 +40,7 @@ def plot_mapped_cells(locations, gw, cells, folder,
 
 
 def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
-                       size_x=16, size_y=12, pt_size=20, cmap='viridis', prefix=''):
+                       size_x=16, size_y=12, pt_size=20, tit_size=15, cmap='viridis', prefix=''):
     """Plots gene expression patterns on the target space.
 
     Keyword arguments:
@@ -66,15 +68,50 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
             plt.scatter(locations[:, 0], locations[:, 1], 
                         c=sdge[np.argwhere(gene_names == gene), :].flatten(),
                         s=pt_size, cmap=cmap)
-        plt.title(gene)
+        plt.title(gene, size=tit_size)
         plt.axis('off')
         idx += 1
             
     plt.tight_layout()
-    plt.savefig(os.path.join(folder, str(num_cells) + '_cells_'
-        + str(locations.shape[0]) + '_locations' + prefix + '.png'))
-    plt.close()
-    
+    if os.path.isdir(folder):
+        plt.savefig(os.path.join(folder, str(num_cells) + '_cells_'
+            + str(locations.shape[0]) + '_locations' + prefix + '.png'))
+        plt.close()
+    else:
+        plt.show()
+
+
+def embedding(dataset, color, title=None, size_x=None, size_y=None,
+                          pt_size=10, tit_size=15, dpi=100):
+    """
+    Plots color (genes)
+    """
+    title = color if title is None else title
+    ncolor = len(color)
+    per_row = 3
+    per_row = ncolor if ncolor < per_row else per_row
+    nrows = int(np.ceil(ncolor / per_row))
+    size_x = 5 * per_row if size_x is None else size_x
+    size_y = 3 * nrows if size_y is None else size_y
+    fig, axs = plt.subplots(nrows, per_row, figsize=(size_x, size_y), dpi=dpi)
+    x = dataset.obsm['spatial'][:, 0]
+    y = dataset.obsm['spatial'][:, 1]
+    axs = axs.flatten() if type(axs) == np.ndarray else [axs]
+    for ax in axs:
+        ax.axis('off')
+
+    for i, g in enumerate(color):
+        if g in dataset.var_names:
+            values = dataset[:, g].X
+        elif g in dataset.obs.columns:
+            values = dataset.obs[g]
+        else:
+            continue
+        axs[i].scatter(x, y, c=np.array(values), s=pt_size)
+        axs[i].set_title(title[i], size=tit_size)
+
+    plt.show()
+    plt.tight_layout()
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
     plt.figure(figsize=(5, 5))
@@ -184,7 +221,7 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
         plt.savefig(os.path.join(folder, 'spatial_archetypes.png'))
     plt.close()
 
-def plot_transport_entropy_dist(tissue):
+def plot_transport_entropy_dist(tissue, tit_size=15, fonts=13, fonts_ticks=12):
     """
     Plots the distribution of entropy of locations transport values for each cell.
     Displays histograms for:
@@ -231,15 +268,17 @@ def plot_transport_entropy_dist(tissue):
     # plot entropy distributions
     min_ent = np.min(ent_T)
     max_ent = np.min(ent_T_unif) * 1.1
-    bins = np.linspace(min_ent, max_ent, 100)
-    plt.hist(ent_T, bins=bins, label='OT', alpha=0.5)
-    plt.hist(ent_T_rproj, bins=bins, label='Random coupling', alpha=0.5)
-    plt.hist(ent_T_unif, bins=bins, label='Outer product coupling', alpha=0.5)
-    if has_atlas:
-        plt.hist(ent_T_shuf, bins=bins, label='Atlas shuffled OT', alpha=0.5)
-    plt.title('Localization of OT')
-    plt.xlabel('Entropy')
-    plt.legend()
+    bins = np.linspace(min_ent, max_ent, 40)
+    kwargs = dict(histtype='stepfilled', alpha=0.3, bins=bins)
+    plt.figure(figsize=[7, 5])
+    plt.hist(ent_T, label='novoSpaRc', **kwargs)
+    plt.hist(ent_T_rproj, label='Random coupling', **kwargs)
+    plt.hist(ent_T_unif, label='Outer product coupling', **kwargs)
+    plt.hist(ent_T_shuf, label='Atlas shuffled novoSpaRc', **kwargs)
+    plt.title('Localization of novoSpaRc', size=tit_size)
+    plt.xlabel('Entropy', size=tit_size)
+    plt.legend(fontsize=fonts, loc='upper left')
+    plt.tick_params(labelsize=fonts_ticks)
     plt.show()
 
     return ent_T, ent_T_unif, ent_T_rproj, ent_T_shuf

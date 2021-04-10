@@ -24,6 +24,7 @@ class Tissue():
 		self.num_cells = len(dataset.obs)
 		self.num_locations = locations.shape[0]
 		self.gene_names = np.array(dataset.var.index.tolist())
+		self.num_genes = len(self.gene_names)
 		self.atlas_matrix = atlas_matrix
 		self.markers_to_use = markers_to_use
 
@@ -176,12 +177,13 @@ class Tissue():
 		if selected_genes is not None:
 			selected_genes = np.asarray(selected_genes)
 			selected_genes = np.unique(selected_genes)
-			gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
+			# gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
+			gene_indices = pd.DataFrame(np.arange(self.num_genes), index=self.gene_names)[0].loc[selected_genes].values
 			sdge = self.sdge[gene_indices, :]
 			gene_names = selected_genes
 		else:
-                        gene_names = self.gene_names
-                        sdge = self.sdge
+			gene_names = self.gene_names
+			sdge = self.sdge
 
 		num_genes = sdge.shape[0]
 		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
@@ -189,8 +191,8 @@ class Tissue():
 		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=n_neighbors)
 		mI = np.array(mI)
 		mI[np.isnan(mI)] = -np.inf
-		important_gene_ids = np.argsort(mI)[::-1]
-		important_gene_names = gene_names[important_gene_ids]
+		# important_gene_ids = np.argsort(mI)[::-1]
+		# important_gene_names = gene_names[important_gene_ids]
 		results = pd.DataFrame({'genes': gene_names, 'mI': mI, 'pval': pvals})
 		results = results.sort_values(by=['mI'], ascending=False)
 	
