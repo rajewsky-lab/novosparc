@@ -187,12 +187,9 @@ class Tissue():
 
 		num_genes = sdge.shape[0]
 		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
-		dataset = pd.DataFrame(sdge.T)
-		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=n_neighbors)
+		mI, pvals = novosparc.an.get_moran_pvals(sdge.T, self.locations, n_neighbors=n_neighbors)
 		mI = np.array(mI)
 		mI[np.isnan(mI)] = -np.inf
-		# important_gene_ids = np.argsort(mI)[::-1]
-		# important_gene_names = gene_names[important_gene_ids]
 		results = pd.DataFrame({'genes': gene_names, 'mI': mI, 'pval': pvals})
 		results = results.sort_values(by=['mI'], ascending=False)
 	

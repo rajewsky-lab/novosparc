@@ -221,7 +221,8 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
         plt.savefig(os.path.join(folder, 'spatial_archetypes.png'))
     plt.close()
 
-def plot_transport_entropy_dist(tissue, tit_size=15, fonts=13, fonts_ticks=12):
+
+def plot_transport_entropy_dist(tissue, tit_size=20, fonts=16, fonts_ticks=20):
     """
     Plots the distribution of entropy of locations transport values for each cell.
     Displays histograms for:
@@ -259,26 +260,56 @@ def plot_transport_entropy_dist(tissue, tit_size=15, fonts=13, fonts_ticks=12):
         tissue_shuf.reconstruct(alpha_linear=tissue_shuf.alpha_linear, epsilon=tissue_shuf.epsilon)
 
     # compute entropies
-    get_cell_entropy = lambda A: (-A * np.log2(A)).sum(axis=1)
-    ent_T = get_cell_entropy(tissue.gw)
-    ent_T_unif = get_cell_entropy(unif_coupling)
-    ent_T_rproj = get_cell_entropy(rand_coupling)
-    ent_T_shuf = get_cell_entropy(tissue_shuf.gw) if has_atlas else None
+    ent_T = novosparc.an.get_cell_entropy(tissue.gw)
+    ent_T_unif = novosparc.an.get_cell_entropy(unif_coupling)
+    ent_T_rproj = novosparc.an.get_cell_entropy(rand_coupling)
+    ent_T_shuf = novosparc.an.get_cell_entropy(tissue_shuf.gw) if has_atlas else None
 
     # plot entropy distributions
     min_ent = np.min(ent_T)
     max_ent = np.min(ent_T_unif) * 1.1
     bins = np.linspace(min_ent, max_ent, 40)
     kwargs = dict(histtype='stepfilled', alpha=0.3, bins=bins)
-    plt.figure(figsize=[7, 5])
-    plt.hist(ent_T, label='novoSpaRc', **kwargs)
-    plt.hist(ent_T_rproj, label='Random coupling', **kwargs)
-    plt.hist(ent_T_unif, label='Outer product coupling', **kwargs)
-    plt.hist(ent_T_shuf, label='Atlas shuffled novoSpaRc', **kwargs)
-    plt.title('Localization of novoSpaRc', size=tit_size)
-    plt.xlabel('Entropy', size=tit_size)
-    plt.legend(fontsize=fonts, loc='upper left')
-    plt.tick_params(labelsize=fonts_ticks)
+    fig = plt.figure(figsize=[8, 6])
+    ax = fig.add_subplot(111)
+    ax.hist(ent_T, label='novoSpaRc', **kwargs)
+    ax.hist(ent_T_rproj, label='Random', **kwargs)
+    ax.hist(ent_T_unif, label='Outer product', **kwargs)
+    ax.hist(ent_T_shuf, label='novoSpaRc with shuffled atlas ', **kwargs)
+    ax.set_title('Entropy distribution of transport matrices', size=tit_size)
+    ax.set_xlabel('Entropy', size=tit_size)
+    lg = ax.legend(fontsize=fonts, loc='upper left', title='Transport matrix')
+    lg.get_title().set_fontsize(fonts)
+    ax.tick_params(labelsize=fonts_ticks)
     plt.show()
 
     return ent_T, ent_T_unif, ent_T_rproj, ent_T_shuf
+
+
+def plot_morans_dists(genes_with_scores, gene_groups, tit_size=20, fonts=16, fonts_ticks=20):
+    """
+
+    """
+    min_mI = 0.8
+    max_mI = 0.7
+
+    for gg_desc, gg in gene_groups.items():
+        mIs = genes_with_scores.loc[gg]['mI']
+        min_mI = min(mIs) if min(mIs) < min_mI else min_mI
+        max_mI = max(mIs) if max(mIs) > max_mI else max_mI
+
+    min_mI = np.floor(10 * min_mI) / 10
+    max_mI = np.ceil(10 * max_mI) / 10
+
+    bins = np.linspace(min_mI, max_mI, 40)
+    kwargs = dict(histtype='stepfilled', alpha=0.3, bins=bins)
+    fig = plt.figure(figsize=[8, 6])
+    ax = fig.add_subplot(111)
+    for gg_desc, gg in gene_groups.items():
+        ax.hist(genes_with_scores.loc[gg]['mI'], label=gg_desc, **kwargs)
+    ax.set_title('Moran`s I for %s genes' % ', '.join(list(gene_groups.keys())), size=tit_size)
+    ax.set_xlabel('Moran`s I', size=tit_size)
+    lg = ax.legend(fontsize=fonts, loc='upper left', title='Gene group')
+    lg.get_title().set_fontsize(fonts)
+    ax.tick_params(labelsize=fonts_ticks)
+    plt.show()
