@@ -19,6 +19,9 @@ from scipy.stats import pearsonr
 def get_moran_pvals(sdge, locations, n_neighbors=8):
     """
     Computes Moran's I autocorrelation and its corresponding p-values (considering a normal, one-tailed test)
+    sdge        -- spatial expression matrix over locations (locations x genes)
+    locations   -- spatial coordinates (locations x dimensions)
+    n_neighbors -- defining the size of neighborhood for checking autocorrelation
     """
     cols = ['X', 'Y', 'Z']
     d = locations.shape[1]
@@ -37,44 +40,6 @@ def get_moran_pvals(sdge, locations, n_neighbors=8):
 
     return np.array(I), np.array(pvals)
 
-def change_matrix_same_sum(T, times=10):
-    """Makes a change to a matrix while:
-        1. Leaving the sum of rows and columns constant
-        2. Maintaining non-negative values. """
-    p = np.sum(T, axis=1)
-    q = np.sum(T, axis=0)
-
-    n, m = T.shape
-    size = int(np.floor(min(n, m)/2.0) * 2)
-    min_change = 0 # 1 / (n * m) * 10e-3
-
-    for _ in np.arange(times):
-        # sample rows and cols of influence
-        samp_rows = random.sample(list(np.arange(n)), size) # samp size?
-        samp_cols = random.sample(list(np.arange(m)), size)
-        sel_rows = np.repeat(samp_rows, size)
-        sel_cols = np.tile(samp_cols, size)
-
-        # sample change
-        subT = T[sel_rows, sel_cols].reshape((size, size))
-        max_change = np.min(subT)
-        # so numbers don't get too small
-        # if max_change < min_change:
-        #     continue
-        change = np.random.uniform(low=min_change, high=max_change)
-
-        # update interlaced grid
-        subT[0::2, 0::2] += change
-        subT[1::2, 1::2] += change
-        subT[1::2, 0::2] -= change
-        subT[0::2, 1::2] -= change
-        T[sel_rows, sel_cols] = subT.flatten()
-
-    # print("Row sums squared error: %f " % np.sum(np.square(np.sum(T, axis=1) - p)))
-    # print("Column sums squared error: %f " % np.sum(np.square(np.sum(T, axis=0) - q)))
-
-    return T
-
 def compute_random_coupling(p, q, epsilon):
     """
     Computes a random coupling based on:
@@ -83,6 +48,9 @@ def compute_random_coupling(p, q, epsilon):
     where T is a couping matrix with marginal distributions p, and q, for rows and columns, respectively
 
     This is solved with a Bregman Sinkhorn computation
+    p       -- marginal distribution of rows
+    q       -- marginal distribution of columns
+    epsilon -- entropy coefficient
     """
     num_cells = len(p)
     num_locations = len(q)
@@ -90,16 +58,23 @@ def compute_random_coupling(p, q, epsilon):
     C = -epsilon * np.log(K)
     return sinkhorn(p, q, C, epsilon)
 
-def get_cell_entropy(A, norm=True):
-    if len(A.shape) == 1:
-        A = A.reshape((1, -1))
-    A = (A.T / A.sum(1)).T if norm else A
-    return (-A * np.log2(A)).sum(axis=1)
+def get_cell_entropy(T, norm=True):
+    """
+    Compute entropy of normalized transport probabilities for each cell
+    T -- transport matrix (cells x locations)
+    """
+    if len(T.shape) == 1:
+        T = T.reshape((1, -1))
+    T = (T.T / T.sum(1)).T if norm else T
+    return (-T * np.log2(T)).sum(axis=1)
 
 def correlation_random_markers(tissue, with_atlas=True, with_repeats=False,
                              alpha_linears=[], epsilons=[], num_markerss=[], repeats=10):
     """
-    Reports the Pearson correlation with the atlas
+    Reports the Pearson correlation with the atlas and with repeats sampling different markers
+    with_atlas                            -- compute correlation with atlas
+    with_repeats                          -- compute correlation with repeats sampling different markers (consistency)
+    alpha_linears, epsilons, num_markerss -- lists of parameters that can vary
     """
 
     stissue = copy.deepcopy(tissue)

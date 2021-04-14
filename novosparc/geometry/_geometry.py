@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import numpy as np
 from matplotlib.image import imread
+from scipy.spatial.distance import cdist
 import math
 import random
 #############
@@ -118,3 +119,16 @@ def create_target_space_from_image(image):
                           if sum(img[y, x, :] == np.array([0, 0, 0]))])
 
     return locations
+
+def prob_dist_from_center(locations):
+    """
+    Computes marginal probabilities for locations based on their distance from center point.
+    locations -- spatial coordinates (locations x dimensions)
+    """
+    d = locations.shape[1]
+    zlocations = (locations - locations.mean(0)) / (locations.std(0))
+    dist = cdist(zlocations, np.zeros((1, d)))
+    rdist = dist.max() - dist
+    rdist = (rdist / rdist.sum()).flatten()
+    return rdist
+
