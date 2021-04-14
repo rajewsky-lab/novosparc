@@ -1,44 +1,52 @@
-import os
-import time
 import copy
-import random
 import numpy as np
 import pandas as pd
 from ot.bregman import sinkhorn
 import scipy.stats as stats
-from multiprocessing import Pool
 from sklearn.neighbors import kneighbors_graph
-from scipy.spatial.distance import squareform, pdist
-from esda.moran import Moran
-from pysal.lib import weights
-from shapely.geometry import Point
-import geopandas as gpd
 from scipy.stats import pearsonr
 
 
-def get_moran_pvals(sdge, locations, n_neighbors=8):
+def get_morans(W, X):
+    n, g = X.shape
+    X = np.array(X)
+    S0 = np.sum(W)
+
+    Z = (X - np.mean(X, 0))
+    sZs = (Z ** 2).sum(0)
+    I = n / S0 * (Z.T @ (W @ Z)) / sZs
+    return np.diagonal(I)
+
+def get_moran_pvals(sdge, locations, npermut=100, n_neighbors=8):
     """
-    Computes Moran's I autocorrelation and its corresponding p-values (considering a normal, one-tailed test)
-    sdge        -- spatial expression matrix over locations (locations x genes)
+    Calculates the spatial correlation (Moran's I value) and its corresponding one-tailed p-value under a normal
+    distribution assumption (permuting locations)
+    sdge        -- expression over locations (locations x genes)
     locations   -- spatial coordinates (locations x dimensions)
-    n_neighbors -- defining the size of neighborhood for checking autocorrelation
+    npermut     -- number of permutations
+    n_neighbors -- number of neighbors to consider for each location
     """
-    cols = ['X', 'Y', 'Z']
-    d = locations.shape[1]
-    df = pd.DataFrame({cols[i]: locations[:, i] for i in np.arange(d)})
-    df['coords'] = df[cols[:d]].apply(Point, axis=1)
-    gdf = gpd.GeoDataFrame(df, geometry='coords')
-    w = weights.distance.KNN.from_dataframe(gdf, k=n_neighbors)
+    nns = kneighbors_graph(locations, n_neighbors, mode='connectivity', include_self=False)
+    W = nns.toarray()
+    X = sdge
+    n, g = X.shape
+    X = np.array(X)
+    pI = np.zeros((npermut, g))
+    idx = np.arange(n)
 
-    I = []
-    pvals = []
-    for g in np.arange(sdge.shape[1]):
-        y = sdge[:,g]
-        mi = Moran(y, w, two_tailed=False)
-        I.append(mi.I)
-        pvals.append(mi.p_norm)
+    for i in np.arange(npermut):
+        pidx = np.random.permutation(idx)
+        pI[i, :] = get_morans(W, X[pidx, :]).reshape((1, -1))
 
-    return np.array(I), np.array(pvals)
+    I = get_morans(W, X)
+    EI = np.mean(pI, 0)
+    seI_norm = np.std(pI, 0)
+    z_norm = (I - EI) / seI_norm
+
+    is_neg_mI = z_norm < 0
+    p_norm = 1 - stats.norm.cdf(z_norm)
+    p_norm[is_neg_mI] = stats.norm.cdf(z_norm)[is_neg_mI]
+    return I, p_norm
 
 def compute_random_coupling(p, q, epsilon):
     """
