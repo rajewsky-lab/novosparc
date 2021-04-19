@@ -8,9 +8,13 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.cluster import hierarchy
+from textwrap import wrap
 import novosparc
 import os
 import copy
+import pandas as pd
+from scipy.spatial.distance import squareform, pdist
 #############
 # functions #
 #############
@@ -18,8 +22,6 @@ import copy
 def plot_mapped_cells(locations, gw, cells, folder, 
                       size_x=16, size_y=12, pt_size=20, cmap='viridis'):
     """Plots the mapped locations of a cell population.
-
-    Keyword arguments:
     locations -- the locations of the target space
     gw        -- the Gromow-Wasserstein matrix computed during the reconstruction
     cells     -- the queried cellls as a numpy array
@@ -38,10 +40,8 @@ def plot_mapped_cells(locations, gw, cells, folder,
 
 
 def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
-                       size_x=16, size_y=12, pt_size=20, cmap='viridis', prefix=''):
+                       size_x=16, size_y=12, pt_size=20, tit_size=15, cmap='viridis', prefix=''):
     """Plots gene expression patterns on the target space.
-
-    Keyword arguments:
     locations  -- the locations of the target space
     sdge       -- the sdge computed from the reconstruction
     genes      -- the genes to plot as a list: ['gene1', 'geme2', ...]
@@ -66,15 +66,53 @@ def plot_gene_patterns(locations, sdge, genes, folder, gene_names, num_cells,
             plt.scatter(locations[:, 0], locations[:, 1], 
                         c=sdge[np.argwhere(gene_names == gene), :].flatten(),
                         s=pt_size, cmap=cmap)
-        plt.title(gene)
+        plt.title(gene, size=tit_size)
         plt.axis('off')
         idx += 1
             
     plt.tight_layout()
-    plt.savefig(os.path.join(folder, str(num_cells) + '_cells_'
-        + str(locations.shape[0]) + '_locations' + prefix + '.png'))
-    plt.close()
-    
+    if os.path.isdir(folder):
+        plt.savefig(os.path.join(folder, str(num_cells) + '_cells_'
+            + str(locations.shape[0]) + '_locations' + prefix + '.png'))
+        plt.close()
+    else:
+        plt.show()
+
+
+def embedding(dataset, color, title=None, size_x=None, size_y=None,
+                          pt_size=10, tit_size=15, dpi=100):
+    """
+    Plots fields (color) of Scanpy AnnData object on spatial coordinates
+    dataset -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
+    color -- a list of fields - gene names or columns from obs to use for color
+    """
+    title = color if title is None else title
+    ncolor = len(color)
+    per_row = 3
+    per_row = ncolor if ncolor < per_row else per_row
+    nrows = int(np.ceil(ncolor / per_row))
+    size_x = 5 * per_row if size_x is None else size_x
+    size_y = 3 * nrows if size_y is None else size_y
+    fig, axs = plt.subplots(nrows, per_row, figsize=(size_x, size_y), dpi=dpi)
+    xy = dataset.obsm['spatial']
+    x = xy[:, 0]
+    y = xy[:, 1] if xy.shape[1] > 1 else np.ones_like(x)
+    axs = axs.flatten() if type(axs) == np.ndarray else [axs]
+    for ax in axs:
+        ax.axis('off')
+
+    for i, g in enumerate(color):
+        if g in dataset.var_names:
+            values = dataset[:, g].X
+        elif g in dataset.obs.columns:
+            values = dataset.obs[g]
+        else:
+            continue
+        axs[i].scatter(x, y, c=np.array(values), s=pt_size)
+        axs[i].set_title(title[i], size=tit_size)
+
+    plt.show()
+    plt.tight_layout()
 
 def plot_histogram_intestine(mean_exp_new_dist, folder):
     plt.figure(figsize=(5, 5))
@@ -160,8 +198,6 @@ def plot_dendrogram(sdge, folder, size_x=25, size_y=10):
 
 def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folder):
     """Plots the spatial archetypes onto a file.
-    
-    Keyword arguments:
     locations  -- the locations of the target space
     archetypes -- the spatial archetypes
     clusters   -- the clusters
@@ -184,14 +220,16 @@ def plot_archetypes(locations, archetypes, clusters, gene_corrs, gene_set, folde
         plt.savefig(os.path.join(folder, 'spatial_archetypes.png'))
     plt.close()
 
-def plot_transport_entropy_dist(tissue):
+
+def plot_transport_entropy_dist(tissue, tit_size=20, fonts=16, fonts_ticks=20):
     """
     Plots the distribution of entropy of locations transport values for each cell.
+    tissue -- novoSpaRc Tissue object with the transport to evaluate
     Displays histograms for:
-        - OT - the given mapping
-        - Atlas shuffled OT - if an atlas is used, shuffles each gene independently over all locations, and recomputes ot with the same params
-        - Random coupling - projection of a random matrix onto the coupling space (set marginal distributions)
-        - Outer product coupling - entropy for the naive outer product coupling (uniform if marginals are uniform)
+        - novoSpaRc - the given mapping
+        - novoSpaRc with shuffled atlas - if an atlas is used, shuffles each gene independently over all locations, and recomputes ot with the same params
+        - Random - projection of a random matrix onto the coupling space (set marginal distributions)
+        - Outer product - entropy for the naive outer product coupling (uniform if marginals are uniform)
     """
 
     num_cells, num_locations = tissue.gw.shape
@@ -222,24 +260,85 @@ def plot_transport_entropy_dist(tissue):
         tissue_shuf.reconstruct(alpha_linear=tissue_shuf.alpha_linear, epsilon=tissue_shuf.epsilon)
 
     # compute entropies
-    get_cell_entropy = lambda A: (-A * np.log2(A)).sum(axis=1)
-    ent_T = get_cell_entropy(tissue.gw)
-    ent_T_unif = get_cell_entropy(unif_coupling)
-    ent_T_rproj = get_cell_entropy(rand_coupling)
-    ent_T_shuf = get_cell_entropy(tissue_shuf.gw) if has_atlas else None
+    ent_T = novosparc.an.get_cell_entropy(tissue.gw)
+    ent_T_unif = novosparc.an.get_cell_entropy(unif_coupling)
+    ent_T_rproj = novosparc.an.get_cell_entropy(rand_coupling)
+    ent_T_shuf = novosparc.an.get_cell_entropy(tissue_shuf.gw) if has_atlas else None
 
     # plot entropy distributions
     min_ent = np.min(ent_T)
     max_ent = np.min(ent_T_unif) * 1.1
-    bins = np.linspace(min_ent, max_ent, 100)
-    plt.hist(ent_T, bins=bins, label='OT', alpha=0.5)
-    plt.hist(ent_T_rproj, bins=bins, label='Random coupling', alpha=0.5)
-    plt.hist(ent_T_unif, bins=bins, label='Outer product coupling', alpha=0.5)
-    if has_atlas:
-        plt.hist(ent_T_shuf, bins=bins, label='Atlas shuffled OT', alpha=0.5)
-    plt.title('Localization of OT')
-    plt.xlabel('Entropy')
-    plt.legend()
+    bins = np.linspace(min_ent, max_ent, 40)
+    kwargs = dict(histtype='stepfilled', alpha=0.3, bins=bins)
+    fig = plt.figure(figsize=[8, 6])
+    ax = fig.add_subplot(111)
+    ax.hist(ent_T, label='novoSpaRc', **kwargs)
+    ax.hist(ent_T_rproj, label='Random', **kwargs)
+    ax.hist(ent_T_unif, label='Outer product', **kwargs)
+    ax.hist(ent_T_shuf, label='novoSpaRc with shuffled atlas ', **kwargs)
+    ax.set_title('Entropy distribution of transport matrices', size=tit_size)
+    ax.set_xlabel('Entropy', size=tit_size)
+    lg = ax.legend(fontsize=fonts, loc='upper left', title='Transport matrix')
+    lg.get_title().set_fontsize(fonts)
+    ax.tick_params(labelsize=fonts_ticks)
     plt.show()
 
     return ent_T, ent_T_unif, ent_T_rproj, ent_T_shuf
+
+
+def plot_morans_dists(genes_with_scores, gene_groups, tit_size=20, fonts=16, fonts_ticks=20):
+    """
+    Overlay Moran's I distributions of given gene groups
+    genes_with_scores -- pandas DataFrame with fields ['genes', 'mI'], for the gene and its corresponding Moran's I value
+    gene_groups       -- dictionary of gene groups to show, key - group name, value - list of gene names
+    """
+    min_mI = 0.8
+    max_mI = 0.7
+    genes_with_scores.index = genes_with_scores['genes']
+    for gg_desc, gg in gene_groups.items():
+        mIs = genes_with_scores.loc[gg]['mI']
+        min_mI = min(mIs) if min(mIs) < min_mI else min_mI
+        max_mI = max(mIs) if max(mIs) > max_mI else max_mI
+
+    min_mI = np.floor(10 * min_mI) / 10
+    max_mI = np.ceil(10 * max_mI) / 10
+
+    bins = np.linspace(min_mI, max_mI, 40)
+    kwargs = dict(histtype='stepfilled', alpha=0.3, bins=bins)
+    fig = plt.figure(figsize=[8, 6])
+    ax = fig.add_subplot(111)
+    for gg_desc, gg in gene_groups.items():
+        ax.hist(genes_with_scores.loc[gg]['mI'], label=gg_desc, **kwargs)
+    ax.set_title('Moran`s I for %s genes' % ', '.join(list(gene_groups.keys())), size=tit_size)
+    ax.set_xlabel('Moran`s I', size=tit_size)
+    lg = ax.legend(fontsize=fonts, loc='upper left', title='Gene group')
+    lg.get_title().set_fontsize(fonts)
+    ax.tick_params(labelsize=fonts_ticks)
+    plt.show()
+
+def plot_exp_loc_dists(exp, locations, tit_size=15, nbins=10):
+    """
+    Plots expression distances vs physical distances over locations
+    exp       -- spatial expression over locations (locations x genes)
+    locations -- spatial coordinates of locations (locations x dimensions)
+    """
+    locs_exp_dist = squareform(pdist(exp))
+    locs_phys_dist = squareform(pdist(locations))
+    exp_col = 'Locations expression distance'
+    phys_col = 'Locations physical distance'
+    phys_col_bin = 'Locations physical distance bin'
+
+    df = pd.DataFrame({exp_col: locs_exp_dist.flatten(),
+                      phys_col: locs_phys_dist.flatten()})
+
+    lower, higher = int(df[phys_col].min()), int(np.ceil(df[phys_col].max()))
+    edges = range(lower, higher, int((higher - lower)/nbins)) # the number of edges is 8
+    lbs = ['(%d, %d]'%(edges[i], edges[i+1]) for i in range(len(edges)-1)]
+    df[phys_col_bin] = pd.cut(df[phys_col], bins=nbins, labels=lbs, include_lowest=True)
+
+    df.boxplot(column=[exp_col], by=[phys_col_bin], grid=False, fontsize=tit_size)
+    plt.xticks(rotation=45, ha='right')
+    plt.ylabel(exp_col, size=tit_size)
+    plt.xlabel(phys_col, size=tit_size)
+    plt.title('')
+    plt.show()

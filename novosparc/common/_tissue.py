@@ -13,17 +13,18 @@ class Tissue():
 
 	def __init__(self, dataset, locations, atlas_matrix=None, markers_to_use=None, output_folder=None):
 		"""Initialize the tissue using the dataset and locations.
-		dataset -- Anndata object for the single cell data (cells x genes)
-		locations -- target space locations (locations x dimensions)
-		atlas_matrix -- optional atlas matrix (atlas locations x markers)
+		dataset        -- Anndata object for the single cell data (cells x genes)
+		locations      -- target space locations (locations x dimensions)
+		atlas_matrix   -- optional atlas matrix (atlas locations x markers)
 		markers_to_use -- optional indices of atlas marker genes in dataset
-		output_folder -- folder path to save the plots and data"""
+		output_folder  -- folder path to save the plots and data"""
 		self.dataset = dataset
 		self.dge = dataset.X
 		self.locations = locations
 		self.num_cells = len(dataset.obs)
 		self.num_locations = locations.shape[0]
 		self.gene_names = np.array(dataset.var.index.tolist())
+		self.num_genes = len(self.gene_names)
 		self.atlas_matrix = atlas_matrix
 		self.markers_to_use = markers_to_use
 
@@ -49,12 +50,12 @@ class Tissue():
 						   expression_metric='minkowski', expression_metric_p=2, verbose=True):
 		"""
 		Set cell-cell expression cost and location-location physical distance cost
-		dge_rep -- some representation of the expression matrix, e.g. pca, selected highly variable genes etc.
-		num_neighbors_s -- num neighbors for cell-cell expression cost
-		num_neighbors_t -- num neighbors for location-location physical distance cost
-		locations_metric -- discrepancy metric - physical distance cost
-		locations_metric_p -- power parameter of the Minkowski metric - locations distance cost
-		expression_metric -- discrepancy metric - expression distance cost
+		dge_rep             -- some representation of the expression matrix, e.g. pca, selected highly variable genes etc.
+		num_neighbors_s     -- num neighbors for cell-cell expression cost
+		num_neighbors_t     -- num neighbors for location-location physical distance cost
+		locations_metric    -- discrepancy metric - physical distance cost
+		locations_metric_p  -- power parameter of the Minkowski metric - locations distance cost
+		expression_metric   -- discrepancy metric - expression distance cost
 		expression_metric_p -- power parameter of the Minkowski metric - expression distance cost
 		"""
 		dge_rep = dge_rep if dge_rep is not None else self.dge
@@ -69,9 +70,9 @@ class Tissue():
 	def setup_linear_cost(self, markers_to_use=None, atlas_matrix=None, markers_metric='euclidean', markers_metric_p=2):
 		"""
 		Set linear(=atlas) cost matrix
-		markers_to_use -- indices of the marker genes
-		atlas_matrix -- corresponding reference atlas
-		markers_metric -- discrepancy metric - cell-location distance cost
+		markers_to_use   -- indices of the marker genes
+		atlas_matrix     -- corresponding reference atlas
+		markers_metric   -- discrepancy metric - cell-location distance cost
 		markers_metric_p -- power parameter of the Minkowski metric - cell-location distance cost
 		"""
 		self.atlas_matrix = atlas_matrix if atlas_matrix is not None else self.atlas_matrix
@@ -87,8 +88,8 @@ class Tissue():
 		"""
 		Set cost matrices for reconstruction. If there are marker genes and an reference atlas matrix, these
 		can be used as well.
-		markers_to_use -- indices of the marker genes
-		atlas_matrix -- reference atlas corresponding to markers_to_use
+		markers_to_use  -- indices of the marker genes
+		atlas_matrix    -- reference atlas corresponding to markers_to_use
 		num_neighbors_s -- num neighbors for cell-cell expression cost
 		num_neighbors_t -- num neighbors for location-location physical distance cost
 		"""
@@ -103,12 +104,12 @@ class Tissue():
 	def reconstruct(self, alpha_linear, epsilon=5e-4, p_locations=None, p_expression=None,
 					search_epsilon=True, random_ini=False, verbose=True):
 		"""Reconstruct the tissue using the calculated costs and the given alpha value
-		alpha_linear -- this is the value the set the weight of the reference atlas if there is any
-		epsilon -- coefficient of entropy regularization
-		p_locations -- marginal probability of locations
-		p_expression -- marginal probability of cells
+		alpha_linear   -- this is the value the set the weight of the reference atlas if there is any
+		epsilon        -- coefficient of entropy regularization
+		p_locations    -- marginal probability of locations
+		p_expression   -- marginal probability of cells
 		search_epsilon -- run with increased epsilon if numerical errors occur
-		random_ini -- random initialization of transportation matrix for stochastic results
+		random_ini     -- random initialization of transportation matrix for stochastic results
 		"""
 		if verbose:
 			print ('Reconstructing spatial information with', self.num_markers,
@@ -141,7 +142,7 @@ class Tissue():
 												  self.alpha_linear, self.p_expression, self.p_locations,
 												  'square_loss', epsilon=epsilon, verbose=verbose, random_ini=random_ini)
 			out = f.getvalue()
-	
+
 			if warning_msg not in out:
 				f.close()
 				break
@@ -169,28 +170,27 @@ class Tissue():
 		sdge_full = np.dot(dge_full.T, self.gw)
 		return sdge_full
 
-	def calculate_spatially_informative_genes(self, selected_genes=None):
+	def calculate_spatially_informative_genes(self, selected_genes=None, n_neighbors=8):
 		"""Calculate spatially informative genes using Moran's I
 		selected_genes -- subset of genes to check. if None, calculate for every gene
 		"""
 		if selected_genes is not None:
 			selected_genes = np.asarray(selected_genes)
-			gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
+			selected_genes = np.unique(selected_genes)
+			# gene_indices = np.nonzero(np.in1d(self.gene_names, selected_genes))[0]
+			gene_indices = pd.DataFrame(np.arange(self.num_genes), index=self.gene_names)[0].loc[selected_genes].values
 			sdge = self.sdge[gene_indices, :]
 			gene_names = selected_genes
 		else:
-                        gene_names = self.gene_names
-                        sdge = self.sdge
+			gene_names = self.gene_names
+			sdge = self.sdge
 
 		num_genes = sdge.shape[0]
 		print('Morans I analysis for %i genes...' % num_genes, end='', flush=True)
-		dataset = pd.DataFrame(sdge.T)
-		mI, pvals = novosparc.analysis._analysis.get_moran_pvals(dataset, self.locations, n_neighbors=8)
+		mI, pvals = novosparc.an.get_moran_pvals(sdge.T, self.locations, n_neighbors=n_neighbors)
 		mI = np.array(mI)
 		mI[np.isnan(mI)] = -np.inf
-		important_gene_ids = np.argsort(mI)[::-1]
-		important_gene_names = gene_names[important_gene_ids]
-		results = pd.DataFrame({'genes': gene_names, 'mI':mI, 'pval':pvals})
+		results = pd.DataFrame({'genes': gene_names, 'mI': mI, 'pval': pvals})
 		results = results.sort_values(by=['mI'], ascending=False)
 	
 		self.spatially_informative_genes = results

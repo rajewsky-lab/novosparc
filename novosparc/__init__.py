@@ -13,7 +13,7 @@ __version__ = '0.4.1'
 from . import plotting as pl
 from . import preprocessing as pp
 from . import reconstruction as rc
-from . import geometry
-from . import analysis
+from . import geometry as gm
+from . import analysis as an
 from . import common as cm
 from . import io as io
