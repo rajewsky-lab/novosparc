@@ -2,6 +2,11 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.4.2 :small:`03 April 2021`
+---------------------------------------
+Improved package structure, fixed minor performace issues, and fixed bugs. Added two new tutorials (corti & osteosarcoma) and 
+updated the previous tutorials with validation analyses.
+
 Version 0.4.1 :small:`24 August 2020`
 ---------------------------------------
 Changed the package structure and run flow of the scripts. Added anndata and scanpy support. Updated tutorials and implemented
