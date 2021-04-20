@@ -2,6 +2,10 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.4.3 :small:`20 April 2021`
+---------------------------------------
+Fixed bugs. Added self consistency analysis and updated tutorials.
+
 Version 0.4.2 :small:`03 April 2021`
 ---------------------------------------
 Improved package structure, fixed minor performace issues, and fixed bugs. Added two new tutorials (corti & osteosarcoma) and 
