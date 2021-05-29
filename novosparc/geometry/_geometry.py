@@ -116,7 +116,7 @@ def create_target_space_from_image(image):
     img_height = img.shape[0]
 
     locations = np.array([(x, y) for x in range(img_width) for y in range(img_height)
-                          if sum(img[y, x, :] == np.array([0, 0, 0]))])
+                          if sum(img[y, x, :] == np.array(img.shape[2]))])
 
     return locations
 
