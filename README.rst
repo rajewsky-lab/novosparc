@@ -26,7 +26,7 @@ is not required, but significantly enhances performance if available.
 
 and
 
-    | *NovoSpaRc: flexible spatial reconstruction of single-cell gene expression with optimal transport*
+    | *novoSpaRc: flexible spatial reconstruction of single-cell gene expression with optimal transport*
     | N Moriel*, E Senel*, N Friedman, N Rajewsky, N Karaiskos†, M Nitzan†
     | `Nature Protocols (2021) <https://www.nature.com/articles/s41596-021-00573-7>`_
 
