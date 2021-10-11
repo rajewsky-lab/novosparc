@@ -67,7 +67,7 @@ class Tissue():
 																									 expression_metric=expression_metric, expression_metric_p=expression_metric_p,
 																									 verbose=verbose)
 
-	def setup_linear_cost(self, markers_to_use=None, atlas_matrix=None, markers_metric='euclidean', markers_metric_p=2):
+	def setup_linear_cost(self, markers_to_use=None, atlas_matrix=None, markers_metric='minkowski', markers_metric_p=2):
 		"""
 		Set linear(=atlas) cost matrix
 		markers_to_use   -- indices of the marker genes
