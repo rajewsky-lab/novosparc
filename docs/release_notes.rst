@@ -2,6 +2,10 @@
 .. role:: smaller
 .. role:: noteversion
 
+Version 0.4.4 :small:`11 October 2021`
+---------------------------------------
+Fixed a bug regarding the distance metric usage in cost calculation.
+
 Version 0.4.3 :small:`20 April 2021`
 ---------------------------------------
 Fixed bugs. Added self consistency analysis and updated tutorials.

@@ -10,7 +10,7 @@ __email__ = ', '.join([
     'enes.senel@mdc-berlin.de',
     'noa.moriel@mail.huji.ac.il'
 ])
-__version__ = '0.4.3'
+__version__ = '0.4.4'
 
 from . import plotting as pl
 from . import preprocessing as pp
