@@ -240,8 +240,8 @@ class Tissue():
     def cleaning_expression_data(self, dataset=None, expression_matrix=None, normalization=None, cov_prior=None,
                                  selected_genes=None, plotting=None):
 
-        # TODO: not sure if it's proper/makes sense to use the anndata dataset here already. Probably not. But it's
-        #  the version I have right now for creating a gene subset. Has to be change later if necessary
+        # ToDo: If requested add an **args to enable access all the other variables that are
+        #  available for BayesianGaussianMixture
 
         """
         :param dataset              -- Scanpy AnnData with 'spatial' matrix in obsm containing the spatial coordinates of the tissue
@@ -261,18 +261,22 @@ class Tissue():
             raise ValueError("Invalid normalization method. Expected one of: %s" % possible_normalization)
 
         # subset matrix
+        modded_gene_list = selected_genes.copy() # gene names for filtering
         if selected_genes is None:
             used_matrix = expression_matrix
-        elif isinstance(selected_genes, list) & len(selected_genes) >= 1:
+        elif isinstance(selected_genes, list) and len(selected_genes) >= 1:
             subset_cols = []
             for i, gene in enumerate(selected_genes):
-                if gene in dataset.var_names:
+                # filter out genes with all-0 values (will result into NA in nromalization)
+                if gene in dataset.var_names and not np.all((np.asarray(dataset[:, gene].X).reshape(-1, 1) == 0)):
                     subset_cols.append(np.asarray(dataset[:, gene].X).reshape(-1, 1))
-            used_matrix = np.concatenate(subset_cols, axis=1)
+                    used_matrix = np.concatenate(subset_cols, axis=1)
+                else:
+                    modded_gene_list.remove(gene)
+                    print("Expression array contained all-0 columns, which where removed")
         else:
             raise ValueError("Invalid input for selected_genes. When given then it has to be a list with genes that"
                              "should be tested. Else give non and cleaning will performed on the whole matrix.")
-
         # normalize data
         if normalization == 'minmax':
             uncleaned_matrix = (used_matrix - np.min(used_matrix)) / \
@@ -314,11 +318,11 @@ class Tissue():
             # check how many labels and how many values per label
             vl_cnts = pd.Series(labels).value_counts()
 
-            # TODO: I would like to write this stuff without those magic numbers (if even possible in python?)
             # only apply sorting when 2 distributions where modelled
             if len(vl_cnts) > 1:
-                # when the 0 dist is the dist of choice, labels have to be inverted for multiplication
-                if vl_cnts[0] < vl_cnts[1]:
+                # when the 0 dist is the dist oF choice (has the distribution with the higher values),
+                # labels have to be inverted for multiplication
+                if gmm.means_[0] > gmm.means_[1]:
                     # invert labels
                     label_assignment[:, 1] = np.logical_not(label_assignment[:, 1]).astype(int)
                 # multiply expression values with label values so that the 0 dist values are effectively removed
@@ -329,21 +333,19 @@ class Tissue():
 
         modded_matrix = np.concatenate(modded_cols, axis=1)
 
-        # in case of subset was used, update the subsetted columns in the original data and return the full expression matrix
+        # in case of subset was used, update the subsetted columns in the original data and
+        # return the full expression matrix
+
         if selected_genes is not None:
             try:
                 df_expression_matrix = pd.DataFrame(expression_matrix.T, columns=dataset.var_names)
             except ValueError:
                 df_expression_matrix = pd.DataFrame(expression_matrix, columns=dataset.var_names)
-            df_modded_matrix = pd.DataFrame(modded_matrix, columns=selected_genes)
+            df_modded_matrix = pd.DataFrame(modded_matrix, columns=modded_gene_list)
             df_expression_matrix.update(df_modded_matrix)
 
             modded_matrix_full = df_expression_matrix.to_numpy()
         else:
             modded_matrix_full = modded_matrix
-
-        # optional plotting of cleaning results
-        # TODO have to think a bit more about this one how to do it properly (e.g. when/how to use the novosparc also
-        #  not sure if this is really necessary when we have the option of using a subset - maybe just plotting manually is cleaner?
 
         self.cleaned_dge = modded_matrix_full
