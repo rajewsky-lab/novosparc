@@ -275,7 +275,8 @@ def plot_transport_entropy_dist(tissue, tit_size=20, fonts=16, fonts_ticks=20):
     ax.hist(ent_T, label='novoSpaRc', **kwargs)
     ax.hist(ent_T_rproj, label='Random', **kwargs)
     ax.hist(ent_T_unif, label='Outer product', **kwargs)
-    ax.hist(ent_T_shuf, label='novoSpaRc with shuffled atlas ', **kwargs)
+    if has_atlas:
+        ax.hist(ent_T_shuf, label='novoSpaRc with shuffled atlas ', **kwargs)
     ax.set_title('Entropy distribution of transport matrices', size=tit_size)
     ax.set_xlabel('Entropy', size=tit_size)
     lg = ax.legend(fontsize=fonts, loc='upper left', title='Transport matrix')
