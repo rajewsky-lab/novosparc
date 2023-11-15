@@ -35,7 +35,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'novosparc'
-copyright = '2019, Nikos Karaiskos, Mor Nitzan'
+copyright = '2019-2023, Nikos Karaiskos, Mor Nitzan'
 author = 'Nikos Karaiskos, Mor Nitzan'
 
 # The short X.Y version
