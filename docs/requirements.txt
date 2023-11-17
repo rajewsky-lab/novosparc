@@ -13,3 +13,4 @@ scipy
 six>=1.12.0
 scanpy
 altair
+pandas
