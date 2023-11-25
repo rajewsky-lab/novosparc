@@ -73,7 +73,24 @@ def write_sdge_to_disk(sdge, num_cells, num_locations, folder):
     np.savetxt(os.path.join(folder, 'sdge_' + str(num_cells) + '_cells_'
                + str(num_locations) + '_locations.txt'), sdge, fmt='%.4e')
     print ('done (', round(time.time()-start_time, 2), 'seconds )')
-    
+
+
+def quantify_clusters_spatially(tissue):
+    """Maps the annotated clusters obtained from the scRNA-seq analysis onto
+    the tissue space.
+
+    Args:
+        tissue: the novosparc tissue object containing the gene expression data,
+                the clusters annotation and the spatial reconstruction. Assumes
+                that the cluster annotation exists in the underlying anndata object.
+
+    Returns:
+        [numpy array]: An array of the cluster annotation per tissue position.
+    """
+    clusters = tissue.dataset.obs['clusters'].to_numpy().flatten()
+    return np.array([np.argmax(np.array([np.median(np.array(tissue.gw[:, location][np.argwhere(clusters == cluster).flatten()]))
+                                         for cluster in np.unique(clusters)])) for location in range(len(tissue.locations))])
+
     
 def find_spatial_archetypes(num_clusters, sdge):
     """Clusters the expression data and finds gene archetypes. Current
